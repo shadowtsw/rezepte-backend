@@ -1,0 +1,5 @@
+
+- Aktuelle Zutaten des Arbeitsschritts highlighten
+- Bei Ruhezeiten oder Dauer einen Timer anbieten
+- Gesamtzeit berechnen
+- Arbeitsschritte parallelisieren

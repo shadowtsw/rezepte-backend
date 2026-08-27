@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
 } from "@nestjs/common";
 import { RecipesService } from "./recipes.service";
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
@@ -37,6 +38,7 @@ export class RecipesController {
     return this.recipesService.deleteRecipe(id);
   }
 
+  @Put(":id")
   @Patch(":id")
   updateRecipe(@Param("id") id: string, @Body() recipe: UpdateRecipeDto) {
     return this.recipesService.updateRecipe(id, recipe);
