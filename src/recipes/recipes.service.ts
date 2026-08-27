@@ -31,9 +31,8 @@ export class RecipesService {
   async createRecipe(recipe: CreateRecipeDto) {
     // Implementation for creating a new recipe
     const newRecipe: Recipe = {
-      id: randomUUID(), // This should be generated or assigned appropriately
-      title: recipe.title,
-      servings: recipe.servings,
+      ...recipe,
+      id: randomUUID(),
     };
 
     await this.recipeRepository.saveRecipe(newRecipe);

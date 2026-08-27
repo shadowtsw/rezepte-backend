@@ -38,9 +38,13 @@ export class RecipesController {
     return this.recipesService.deleteRecipe(id);
   }
 
-  @Put(":id")
   @Patch(":id")
-  updateRecipe(@Param("id") id: string, @Body() recipe: UpdateRecipeDto) {
+  updateRecipePatch(@Param("id") id: string, @Body() recipe: UpdateRecipeDto) {
+    return this.recipesService.updateRecipe(id, recipe);
+  }
+
+  @Put(":id")
+  updateRecipePut(@Param("id") id: string, @Body() recipe: UpdateRecipeDto) {
     return this.recipesService.updateRecipe(id, recipe);
   }
 }

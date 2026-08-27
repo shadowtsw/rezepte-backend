@@ -5,21 +5,21 @@ import { Recipe, RecipeUpdate } from "../recipe.model";
 @Injectable()
 export class InMemoryRecipesRepository implements RecipeRepository {
   private recipes: Recipe[] = [
-    {
-      id: "1",
-      title: "Pizza",
-      servings: 2,
-    },
-    {
-      id: "2",
-      title: "Carbonara",
-      servings: 4,
-    },
-    {
-      id: "3",
-      title: "Lasagne",
-      servings: 6,
-    },
+    // {
+    //   id: "1",
+    //   title: "Pizza",
+    //   servings: 2,
+    // },
+    // {
+    //   id: "2",
+    //   title: "Carbonara",
+    //   servings: 4,
+    // },
+    // {
+    //   id: "3",
+    //   title: "Lasagne",
+    //   servings: 6,
+    // },
   ];
 
   getAllRecipes(): Promise<Recipe[]> {
