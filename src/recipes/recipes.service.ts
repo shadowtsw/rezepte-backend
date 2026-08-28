@@ -34,6 +34,7 @@ export class RecipesService {
       ...recipe,
       id: recipe.id ?? randomUUID(),
       status: "draft",
+      version: 1,
     };
 
     await this.recipeRepository.saveRecipe(newRecipe);

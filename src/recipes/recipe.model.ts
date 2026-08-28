@@ -7,6 +7,7 @@ export interface Recipe {
   sections: RecipeSection[];
   notes?: string;
   status: RecipeStatus;
+  version: number;
 }
 
 export interface RecipeSection {
