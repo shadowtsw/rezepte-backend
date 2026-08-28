@@ -3,6 +3,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsUUID,
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
@@ -63,6 +64,10 @@ class RecipeSectionDto {
 }
 
 export class CreateRecipeDto {
+  @IsOptional()
+  @IsUUID()
+  id?: string;
+
   @IsString()
   title!: string;
 

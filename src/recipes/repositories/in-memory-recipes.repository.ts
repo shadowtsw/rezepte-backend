@@ -62,4 +62,37 @@ export class InMemoryRecipesRepository implements RecipeRepository {
 
     return Promise.resolve(updated);
   }
+
+  async publishRecipe(id: string): Promise<Recipe | undefined> {
+    // const updatedDocument = await this.collection.findOneAndUpdate(
+    //   { id },
+    //   { $set: { status: "published" } },
+    //   { returnDocument: "after" },
+    // );
+
+    // return updatedDocument ?? undefined;
+    return Promise.resolve(undefined);
+  }
+
+  async archiveRecipe(id: string): Promise<Recipe | undefined> {
+    // const updatedDocument = await this.collection.findOneAndUpdate(
+    //   { id },
+    //   { $set: { status: "published" } },
+    //   { returnDocument: "after" },
+    // );
+
+    // return updatedDocument ?? undefined;
+    return Promise.resolve(undefined);
+  }
+
+  async draftRecipe(id: string): Promise<Recipe | undefined> {
+    // const updatedDocument = await this.collection.findOneAndUpdate(
+    //   { id },
+    //   { $set: { status: "published" } },
+    //   { returnDocument: "after" },
+    // );
+
+    // return updatedDocument ?? undefined;
+    return Promise.resolve(undefined);
+  }
 }

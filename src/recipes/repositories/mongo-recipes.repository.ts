@@ -45,4 +45,34 @@ export class MongoRecipesRepository implements RecipeRepository {
 
     return updatedDocument ?? undefined;
   }
+
+  async publishRecipe(id: string): Promise<Recipe | undefined> {
+    const updatedDocument = await this.collection.findOneAndUpdate(
+      { id },
+      { $set: { status: "published" } },
+      { returnDocument: "after" },
+    );
+
+    return updatedDocument ?? undefined;
+  }
+
+  async archiveRecipe(id: string): Promise<Recipe | undefined> {
+    const updatedDocument = await this.collection.findOneAndUpdate(
+      { id },
+      { $set: { status: "archived" } },
+      { returnDocument: "after" },
+    );
+
+    return updatedDocument ?? undefined;
+  }
+
+  async draftRecipe(id: string): Promise<Recipe | undefined> {
+    const updatedDocument = await this.collection.findOneAndUpdate(
+      { id },
+      { $set: { status: "draft" } },
+      { returnDocument: "after" },
+    );
+
+    return updatedDocument ?? undefined;
+  }
 }

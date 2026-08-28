@@ -32,7 +32,8 @@ export class RecipesService {
     // Implementation for creating a new recipe
     const newRecipe: Recipe = {
       ...recipe,
-      id: randomUUID(),
+      id: recipe.id ?? randomUUID(),
+      status: "draft",
     };
 
     await this.recipeRepository.saveRecipe(newRecipe);
@@ -50,6 +51,36 @@ export class RecipesService {
 
   async updateRecipe(id: string, recipe: UpdateRecipeDto) {
     const updated = await this.recipeRepository.updateRecipe(id, recipe);
+
+    if (!updated) {
+      throw new NotFoundException(`Recipe with ID ${id} not found`);
+    }
+
+    return updated;
+  }
+
+  async publishRecipe(id: string): Promise<Recipe> {
+    const updated = await this.recipeRepository.publishRecipe(id);
+
+    if (!updated) {
+      throw new NotFoundException(`Recipe with ID ${id} not found`);
+    }
+
+    return updated;
+  }
+
+  async archiveRecipe(id: string): Promise<Recipe> {
+    const updated = await this.recipeRepository.archiveRecipe(id);
+
+    if (!updated) {
+      throw new NotFoundException(`Recipe with ID ${id} not found`);
+    }
+
+    return updated;
+  }
+
+  async draftRecipe(id: string): Promise<Recipe> {
+    const updated = await this.recipeRepository.draftRecipe(id);
 
     if (!updated) {
       throw new NotFoundException(`Recipe with ID ${id} not found`);

@@ -47,4 +47,19 @@ export class RecipesController {
   updateRecipePut(@Param("id") id: string, @Body() recipe: UpdateRecipeDto) {
     return this.recipesService.updateRecipe(id, recipe);
   }
+
+  @Post(":id/publish")
+  publishRecipe(@Param("id") id: string) {
+    return this.recipesService.publishRecipe(id);
+  }
+
+  @Post(":id/archive")
+  archiveRecipe(@Param("id") id: string) {
+    return this.recipesService.archiveRecipe(id);
+  }
+
+  @Post(":id/draft")
+  draftRecipe(@Param("id") id: string) {
+    return this.recipesService.draftRecipe(id);
+  }
 }

@@ -6,6 +6,7 @@ export interface Recipe {
   categories: string[];
   sections: RecipeSection[];
   notes?: string;
+  status: RecipeStatus;
 }
 
 export interface RecipeSection {
@@ -33,4 +34,6 @@ export interface Ingredient {
   name: string;
 }
 
-export type RecipeUpdate = Partial<Omit<Recipe, "id">>;
+export type RecipeStatus = "draft" | "published" | "archived";
+
+export type RecipeUpdate = Partial<Omit<Recipe, "id" | "status">>;
