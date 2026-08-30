@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
 } from "@nestjs/common";
 import { RecipesService } from "./recipes.service";
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
@@ -18,8 +19,14 @@ export class RecipesController {
   constructor(private readonly recipesService: RecipesService) {}
 
   @Get()
-  getAllRecipes(): Promise<Recipe[]> {
-    return this.recipesService.getAllRecipes();
+  getAllRecipes(
+    @Query("categoryId") categoryId?: string,
+    @Query("uncategorized") uncategorized?: string,
+  ): Promise<Recipe[]> {
+    return this.recipesService.getAllRecipes(
+      categoryId,
+      uncategorized === "true",
+    );
   }
 
   @Get(":id")

@@ -1,7 +1,10 @@
 import { Recipe, RecipeUpdate } from "../recipe.model";
 
 export interface RecipeRepository {
-  getAllRecipes(): Promise<Recipe[]>;
+  getAllRecipes(
+    categoryId?: string,
+    uncategorized?: boolean,
+  ): Promise<Recipe[]>;
   findById(id: string): Promise<Recipe | undefined>;
   saveRecipe(recipe: Recipe): Promise<Recipe>;
   deleteRecipe(id: string): Promise<boolean>;
@@ -9,4 +12,8 @@ export interface RecipeRepository {
   publishRecipe(id: string): Promise<Recipe | undefined>;
   archiveRecipe(id: string): Promise<Recipe | undefined>;
   draftRecipe(id: string): Promise<Recipe | undefined>;
+  getRecipesByCategory(
+    categoryId: string,
+  ): Promise<Pick<Recipe, "id" | "title">[]>;
+  removeCategoryFromRecipes(categoryId: string): Promise<void>;
 }

@@ -1,10 +1,16 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
 import type { RecipeRepository } from "./repositories/recipe.repository";
 import { RECIPE_REPOSITORY } from "./recipe.constants";
 import { Recipe } from "./recipe.model";
 import { randomUUID } from "node:crypto";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
+import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
 
 @Injectable()
 export class RecipesService {
@@ -13,11 +19,12 @@ export class RecipesService {
     private readonly recipeRepository: RecipeRepository,
   ) {}
 
-  getAllRecipes(): Promise<Recipe[]> {
-    // Implementation for fetching all recipes
-    return this.recipeRepository.getAllRecipes();
+  getAllRecipes(
+    categoryId?: string,
+    uncategorized?: boolean,
+  ): Promise<Recipe[]> {
+    return this.recipeRepository.getAllRecipes(categoryId, uncategorized);
   }
-
   async getRecipeById(id: string) {
     const recipe = await this.recipeRepository.findById(id);
 
@@ -29,7 +36,6 @@ export class RecipesService {
   }
 
   async createRecipe(recipe: CreateRecipeDto) {
-    // Implementation for creating a new recipe
     const newRecipe: Recipe = {
       ...recipe,
       id: recipe.id ?? randomUUID(),
@@ -37,7 +43,15 @@ export class RecipesService {
       version: 1,
     };
 
-    await this.recipeRepository.saveRecipe(newRecipe);
+    try {
+      await this.recipeRepository.saveRecipe(newRecipe);
+    } catch (error) {
+      if (error instanceof DuplicateKeyError) {
+        throw new ConflictException(error.message);
+      }
+
+      throw error;
+    }
 
     return { message: "Recipe created successfully", newRecipe };
   }
@@ -88,5 +102,15 @@ export class RecipesService {
     }
 
     return updated;
+  }
+
+  async getRecipesByCategory(
+    categoryId: string,
+  ): Promise<Pick<Recipe, "id" | "title">[]> {
+    return this.recipeRepository.getRecipesByCategory(categoryId);
+  }
+
+  async removeCategoryFromRecipes(categoryId: string): Promise<void> {
+    await this.recipeRepository.removeCategoryFromRecipes(categoryId);
   }
 }

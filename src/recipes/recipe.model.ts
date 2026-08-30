@@ -3,11 +3,11 @@ export interface Recipe {
   title: string;
   servings: number;
   tags: string[];
-  categories: string[];
   sections: RecipeSection[];
   notes?: string;
   status: RecipeStatus;
   version: number;
+  categories: RecipeCategoryReference[];
 }
 
 export interface RecipeSection {
@@ -33,6 +33,10 @@ export interface IngredientUsage {
 export interface Ingredient {
   id: string;
   name: string;
+}
+
+export interface RecipeCategoryReference {
+  id: string;
 }
 
 export type RecipeStatus = "draft" | "published" | "archived";

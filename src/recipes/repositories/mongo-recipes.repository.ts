@@ -3,6 +3,8 @@ import { Collection } from "mongodb";
 import { Recipe, RecipeUpdate } from "../recipe.model";
 import { RecipeRepository } from "./recipe.repository";
 import { RECIPE_COLLECTION } from "../recipe.constants";
+import { MongoServerError } from "mongodb";
+import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
 
 @Injectable()
 export class MongoRecipesRepository implements RecipeRepository {
@@ -11,8 +13,21 @@ export class MongoRecipesRepository implements RecipeRepository {
     private readonly collection: Collection<Recipe>,
   ) {}
 
-  getAllRecipes(): Promise<Recipe[]> {
-    return this.collection.find().toArray();
+  async getAllRecipes(
+    categoryId?: string,
+    uncategorized?: boolean,
+  ): Promise<Recipe[]> {
+    let filter = {};
+
+    if (categoryId) {
+      filter = { "categories.id": categoryId };
+    } else if (uncategorized) {
+      filter = {
+        $or: [{ categories: { $exists: false } }, { categories: { $size: 0 } }], //* old refs without categories field will be considered uncategorized
+      };
+    }
+
+    return this.collection.find(filter).toArray();
   }
 
   async findById(id: string): Promise<Recipe | undefined> {
@@ -22,9 +37,19 @@ export class MongoRecipesRepository implements RecipeRepository {
   }
 
   async saveRecipe(recipe: Recipe): Promise<Recipe> {
-    await this.collection.insertOne(recipe);
+    try {
+      await this.collection.insertOne(recipe);
 
-    return recipe;
+      return recipe;
+    } catch (error) {
+      if (error instanceof MongoServerError && error.code === 11000) {
+        throw new DuplicateKeyError(
+          `Recipe with ID ${recipe.id} already exists`,
+        );
+      }
+
+      throw error;
+    }
   }
 
   async deleteRecipe(id: string): Promise<boolean> {
@@ -74,5 +99,28 @@ export class MongoRecipesRepository implements RecipeRepository {
     );
 
     return updatedDocument ?? undefined;
+  }
+
+  async getRecipesByCategory(
+    categoryId: string,
+  ): Promise<Pick<Recipe, "id" | "title">[]> {
+    return this.collection
+      .find(
+        { "categories.id": categoryId },
+        {
+          projection: {
+            id: 1,
+            title: 1,
+          },
+        },
+      )
+      .toArray();
+  }
+
+  async removeCategoryFromRecipes(categoryId: string): Promise<void> {
+    await this.collection.updateMany(
+      { "categories.id": categoryId },
+      { $pull: { categories: { id: categoryId } } },
+    );
   }
 }

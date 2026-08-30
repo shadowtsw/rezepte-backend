@@ -95,4 +95,14 @@ export class InMemoryRecipesRepository implements RecipeRepository {
     // return updatedDocument ?? undefined;
     return Promise.resolve(undefined);
   }
+
+  async getRecipesByCategory(
+    categoryId: string,
+  ): Promise<Pick<Recipe, "id" | "title">[]> {
+    return Promise.resolve([]);
+  }
+
+  async removeCategoryFromRecipes(categoryId: string): Promise<void> {
+    return Promise.resolve();
+  }
 }

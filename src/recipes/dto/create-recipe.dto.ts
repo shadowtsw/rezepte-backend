@@ -63,6 +63,11 @@ class RecipeSectionDto {
   steps!: RecipeStepDto[];
 }
 
+class RecipeCategoryReferenceDto {
+  @IsString()
+  id!: string;
+}
+
 export class CreateRecipeDto {
   @IsOptional()
   @IsUUID()
@@ -79,8 +84,9 @@ export class CreateRecipeDto {
   tags!: string[];
 
   @IsArray()
-  @IsString({ each: true })
-  categories!: string[];
+  @ValidateNested({ each: true })
+  @Type(() => RecipeCategoryReferenceDto)
+  categories!: RecipeCategoryReferenceDto[];
 
   @IsArray()
   @ValidateNested({ each: true })
