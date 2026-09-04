@@ -11,12 +11,14 @@ import { Recipe } from "./recipe.model";
 import { randomUUID } from "node:crypto";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
 import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
+import { IngredientsService } from "src/ingredients/ingredients.service";
 
 @Injectable()
 export class RecipesService {
   constructor(
     @Inject(RECIPE_REPOSITORY)
     private readonly recipeRepository: RecipeRepository,
+    private readonly ingredientsService: IngredientsService,
   ) {}
 
   getAllRecipes(
@@ -43,6 +45,16 @@ export class RecipesService {
       version: 1,
     };
 
+    for (const section of newRecipe.sections) {
+      for (const step of section.steps) {
+        for (const ingredient of step.ingredients) {
+          await this.ingredientsService.findOrCreateIngredient(
+            ingredient.ingredient,
+          );
+        }
+      }
+    }
+
     try {
       await this.recipeRepository.saveRecipe(newRecipe);
     } catch (error) {
@@ -65,6 +77,18 @@ export class RecipesService {
   }
 
   async updateRecipe(id: string, recipe: UpdateRecipeDto) {
+    if (recipe.sections) {
+      for (const section of recipe.sections) {
+        for (const step of section.steps) {
+          for (const ingredient of step.ingredients) {
+            await this.ingredientsService.findOrCreateIngredient(
+              ingredient.ingredient,
+            );
+          }
+        }
+      }
+    }
+
     const updated = await this.recipeRepository.updateRecipe(id, recipe);
 
     if (!updated) {

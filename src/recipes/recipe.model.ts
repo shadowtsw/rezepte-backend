@@ -25,14 +25,9 @@ export interface RecipeStep {
 }
 
 export interface IngredientUsage {
-  ingredient: Ingredient;
+  ingredient: string;
   amount?: number;
   unit?: string;
-}
-
-export interface Ingredient {
-  id: string;
-  name: string;
 }
 
 export interface RecipeCategoryReference {

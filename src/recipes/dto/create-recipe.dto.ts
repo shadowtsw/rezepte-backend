@@ -8,18 +8,9 @@ import {
 } from "class-validator";
 import { Type } from "class-transformer";
 
-class IngredientDto {
-  @IsString()
-  id!: string;
-
-  @IsString()
-  name!: string;
-}
-
 class IngredientUsageDto {
-  @ValidateNested()
-  @Type(() => IngredientDto)
-  ingredient!: IngredientDto;
+  @IsString()
+  ingredient!: string;
 
   @IsOptional()
   @IsInt()

@@ -12,9 +12,10 @@ import { Recipe } from "./recipe.model";
 import { MongoRecipesRepository } from "./repositories/mongo-recipes.repository";
 import { DatabaseModule } from "src/database/database.module";
 import { DATABASE_NAME, MONGO_CLIENT } from "src/database/database.constants";
+import { IngredientsModule } from "src/ingredients/ingredients.module";
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, IngredientsModule],
   controllers: [RecipesController],
   providers: [
     RecipesService,

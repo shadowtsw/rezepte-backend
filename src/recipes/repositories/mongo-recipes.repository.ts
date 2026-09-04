@@ -64,7 +64,10 @@ export class MongoRecipesRepository implements RecipeRepository {
   ): Promise<Recipe | undefined> {
     const updatedDocument = await this.collection.findOneAndUpdate(
       { id },
-      { $set: recipe },
+      {
+        $set: recipe,
+        $inc: { version: 1 },
+      },
       { returnDocument: "after" },
     );
 
