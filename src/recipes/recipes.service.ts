@@ -95,7 +95,7 @@ export class RecipesService {
       throw new NotFoundException(`Recipe with ID ${id} not found`);
     }
 
-    return updated;
+    return { message: "Recipe updated successfully", updatedRecipe: updated };
   }
 
   async publishRecipe(id: string): Promise<Recipe> {
