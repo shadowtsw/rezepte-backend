@@ -1,6 +1,6 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { Collection } from "mongodb";
-import { Recipe, RecipeUpdate } from "../recipe.model";
+import { Collection, Filter } from "mongodb";
+import { Recipe, RecipeStatus, RecipeUpdate } from "../recipe.model";
 import { RecipeRepository } from "./recipe.repository";
 import { RECIPE_COLLECTION } from "../recipe.constants";
 import { MongoServerError } from "mongodb";
@@ -16,15 +16,23 @@ export class MongoRecipesRepository implements RecipeRepository {
   async getAllRecipes(
     categoryId?: string,
     uncategorized?: boolean,
+    status?: RecipeStatus,
   ): Promise<Recipe[]> {
-    let filter = {};
+    const filter: Filter<Recipe> = {};
 
     if (categoryId) {
-      filter = { "categories.id": categoryId };
+      filter["categories.id"] = categoryId;
     } else if (uncategorized) {
-      filter = {
-        $or: [{ categories: { $exists: false } }, { categories: { $size: 0 } }], //* old refs without categories field will be considered uncategorized
-      };
+      filter.$or = [
+        { categories: { $exists: false } },
+        { categories: { $size: 0 } },
+      ];
+    }
+
+    if (status) {
+      filter.status = status;
+    } else {
+      filter.status = { $ne: "archived" };
     }
 
     return this.collection.find(filter).toArray();

@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { RecipesService } from "./recipes.service";
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
-import { Recipe } from "./recipe.model";
+import type { Recipe, RecipeStatus } from "./recipe.model";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
 
 @Controller("recipes")
@@ -22,10 +22,12 @@ export class RecipesController {
   getAllRecipes(
     @Query("categoryId") categoryId?: string,
     @Query("uncategorized") uncategorized?: string,
+    @Query("status") status?: RecipeStatus,
   ): Promise<Recipe[]> {
     return this.recipesService.getAllRecipes(
       categoryId,
       uncategorized === "true",
+      status,
     );
   }
 

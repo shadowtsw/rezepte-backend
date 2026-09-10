@@ -1,9 +1,10 @@
-import { Recipe, RecipeUpdate } from "../recipe.model";
+import { Recipe, RecipeStatus, RecipeUpdate } from "../recipe.model";
 
 export interface RecipeRepository {
   getAllRecipes(
     categoryId?: string,
     uncategorized?: boolean,
+    status?: RecipeStatus,
   ): Promise<Recipe[]>;
   findById(id: string): Promise<Recipe | undefined>;
   saveRecipe(recipe: Recipe): Promise<Recipe>;

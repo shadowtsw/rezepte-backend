@@ -7,7 +7,7 @@ import {
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
 import type { RecipeRepository } from "./repositories/recipe.repository";
 import { RECIPE_REPOSITORY } from "./recipe.constants";
-import { Recipe } from "./recipe.model";
+import { Recipe, RecipeStatus } from "./recipe.model";
 import { randomUUID } from "node:crypto";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
 import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
@@ -24,9 +24,15 @@ export class RecipesService {
   getAllRecipes(
     categoryId?: string,
     uncategorized?: boolean,
+    status?: RecipeStatus,
   ): Promise<Recipe[]> {
-    return this.recipeRepository.getAllRecipes(categoryId, uncategorized);
+    return this.recipeRepository.getAllRecipes(
+      categoryId,
+      uncategorized,
+      status,
+    );
   }
+
   async getRecipeById(id: string) {
     const recipe = await this.recipeRepository.findById(id);
 
