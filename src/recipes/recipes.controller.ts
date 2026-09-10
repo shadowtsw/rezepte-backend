@@ -46,27 +46,48 @@ export class RecipesController {
   }
 
   @Patch(":id")
-  updateRecipePatch(@Param("id") id: string, @Body() recipe: UpdateRecipeDto) {
+  updateRecipePatch(
+    @Param("id") id: string,
+    @Body() recipe: UpdateRecipeDto,
+  ): Promise<{
+    message: string;
+    updatedRecipe: Recipe;
+  }> {
     return this.recipesService.updateRecipe(id, recipe);
   }
 
   @Put(":id")
-  updateRecipePut(@Param("id") id: string, @Body() recipe: UpdateRecipeDto) {
+  updateRecipePut(
+    @Param("id") id: string,
+    @Body() recipe: UpdateRecipeDto,
+  ): Promise<{
+    message: string;
+    updatedRecipe: Recipe;
+  }> {
     return this.recipesService.updateRecipe(id, recipe);
   }
 
   @Post(":id/publish")
-  publishRecipe(@Param("id") id: string) {
+  publishRecipe(@Param("id") id: string): Promise<{
+    message: string;
+    updatedRecipe: Recipe;
+  }> {
     return this.recipesService.publishRecipe(id);
   }
 
   @Post(":id/archive")
-  archiveRecipe(@Param("id") id: string) {
+  archiveRecipe(@Param("id") id: string): Promise<{
+    message: string;
+    updatedRecipe: Recipe;
+  }> {
     return this.recipesService.archiveRecipe(id);
   }
 
   @Post(":id/draft")
-  draftRecipe(@Param("id") id: string) {
+  draftRecipe(@Param("id") id: string): Promise<{
+    message: string;
+    updatedRecipe: Recipe;
+  }> {
     return this.recipesService.draftRecipe(id);
   }
 }

@@ -98,34 +98,46 @@ export class RecipesService {
     return { message: "Recipe updated successfully", updatedRecipe: updated };
   }
 
-  async publishRecipe(id: string): Promise<Recipe> {
+  async publishRecipe(id: string): Promise<{
+    message: string;
+    updatedRecipe: Recipe;
+  }> {
     const updated = await this.recipeRepository.publishRecipe(id);
 
     if (!updated) {
       throw new NotFoundException(`Recipe with ID ${id} not found`);
     }
 
-    return updated;
+    return { message: "Recipe published successfully", updatedRecipe: updated };
   }
 
-  async archiveRecipe(id: string): Promise<Recipe> {
+  async archiveRecipe(id: string): Promise<{
+    message: string;
+    updatedRecipe: Recipe;
+  }> {
     const updated = await this.recipeRepository.archiveRecipe(id);
 
     if (!updated) {
       throw new NotFoundException(`Recipe with ID ${id} not found`);
     }
 
-    return updated;
+    return { message: "Recipe archived successfully", updatedRecipe: updated };
   }
 
-  async draftRecipe(id: string): Promise<Recipe> {
+  async draftRecipe(id: string): Promise<{
+    message: string;
+    updatedRecipe: Recipe;
+  }> {
     const updated = await this.recipeRepository.draftRecipe(id);
 
     if (!updated) {
       throw new NotFoundException(`Recipe with ID ${id} not found`);
     }
 
-    return updated;
+    return {
+      message: "Recipe set to draft successfully",
+      updatedRecipe: updated,
+    };
   }
 
   async getRecipesByCategory(
