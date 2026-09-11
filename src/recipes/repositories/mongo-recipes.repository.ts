@@ -117,7 +117,7 @@ export class MongoRecipesRepository implements RecipeRepository {
   ): Promise<Pick<Recipe, "id" | "title">[]> {
     return this.collection
       .find(
-        { "categories.id": categoryId },
+        { "categories.id": categoryId, status: "published" },
         {
           projection: {
             id: 1,
