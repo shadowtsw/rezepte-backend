@@ -11,5 +11,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Node Version
+        run: node --version
+
+      - name: npm Version
+        run: npm --version
+
       - name: Test
         run: echo "Hallo vom Rezepte-Runner!"
