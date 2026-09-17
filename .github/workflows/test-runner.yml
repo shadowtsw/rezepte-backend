@@ -11,8 +11,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Docker Version
-        run: docker --version
+      - name: Test Docker
+        run: docker run --rm hello-world
 
       - name: Test
         run: echo "Hallo vom Rezepte-Runner!"
