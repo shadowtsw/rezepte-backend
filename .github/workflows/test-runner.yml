@@ -11,8 +11,5 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Test
-        run: echo "Hallo vom Rezepte-Runner!"
-
-      - name: Build Docker Image
-        run: docker build -t rezepte-backend:beta .
+      - name: Deploy
+        run: docker compose up -d --build
