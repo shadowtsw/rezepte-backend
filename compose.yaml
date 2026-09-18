@@ -1,0 +1,8 @@
+services:
+  backend:
+    build: .
+    image: rezepte-backend:beta
+    environment:
+      MONGO_URI: ${MONGO_URI}
+    ports:
+      - "3000:3000"
