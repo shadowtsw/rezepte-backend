@@ -15,4 +15,4 @@ jobs:
         run: echo "Hallo vom Rezepte-Runner!"
 
       - name: Build Docker Image
-        run: docker build -t rezepte-test .
+        run: docker build -t rezepte-backend:beta .
