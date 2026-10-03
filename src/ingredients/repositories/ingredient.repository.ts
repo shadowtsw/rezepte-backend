@@ -5,4 +5,10 @@ export interface IngredientRepository {
   findById(id: string): Promise<Ingredient | undefined>;
   createIngredient(ingredient: Ingredient): Promise<Ingredient>;
   findByNormalizedName(normalizedName: string): Promise<Ingredient | undefined>;
+  updateIngredient(
+    id: string,
+    name: string,
+    normalizedName: string,
+  ): Promise<Ingredient | undefined>;
+  deleteIngredient(id: string): Promise<boolean>;
 }

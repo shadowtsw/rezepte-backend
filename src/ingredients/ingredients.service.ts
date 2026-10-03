@@ -11,6 +11,7 @@ import type { IngredientRepository } from "./repositories/ingredient.repository"
 import { INGREDIENT_REPOSITORY } from "./ingredient.constants";
 import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
 import { normalizeIngredientName } from "./ingredient.utils";
+import { UpdateIngredientDto } from "./dto/update-ingredient.dto";
 
 @Injectable()
 export class IngredientsService {
@@ -87,6 +88,42 @@ export class IngredientsService {
       }
 
       throw error;
+    }
+  }
+
+  async updateIngredient(
+    id: string,
+    dto: UpdateIngredientDto,
+  ): Promise<Ingredient> {
+    const normalizedName = normalizeIngredientName(dto.name);
+
+    try {
+      const updatedIngredient =
+        await this.ingredientRepository.updateIngredient(
+          id,
+          dto.name,
+          normalizedName,
+        );
+
+      if (!updatedIngredient) {
+        throw new NotFoundException(`Ingredient with ID ${id} not found`);
+      }
+
+      return updatedIngredient;
+    } catch (error) {
+      if (error instanceof DuplicateKeyError) {
+        throw new ConflictException(`Ingredient "${dto.name}" already exists`);
+      }
+
+      throw error;
+    }
+  }
+
+  async deleteIngredient(id: string): Promise<void> {
+    const deleted = await this.ingredientRepository.deleteIngredient(id);
+
+    if (!deleted) {
+      throw new NotFoundException(`Ingredient with ID ${id} not found`);
     }
   }
 }

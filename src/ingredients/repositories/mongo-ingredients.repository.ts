@@ -58,4 +58,37 @@ export class MongoIngredientsRepository implements IngredientRepository {
       throw error;
     }
   }
+
+  async updateIngredient(
+    id: string,
+    name: string,
+    normalizedName: string,
+  ): Promise<Ingredient | undefined> {
+    try {
+      const updatedIngredient = await this.collection.findOneAndUpdate(
+        { id },
+        {
+          $set: {
+            name,
+            normalizedName,
+          },
+        },
+        { returnDocument: "after" },
+      );
+
+      return updatedIngredient ?? undefined;
+    } catch (error) {
+      if (error instanceof MongoServerError && error.code === 11000) {
+        throw new DuplicateKeyError();
+      }
+
+      throw error;
+    }
+  }
+
+  async deleteIngredient(id: string): Promise<boolean> {
+    const result = await this.collection.deleteOne({ id });
+
+    return result.deletedCount === 1;
+  }
 }

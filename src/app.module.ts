@@ -4,7 +4,8 @@ import { AppService } from "./app.service";
 import { RecipesModule } from "./recipes/recipes.module";
 import { ConfigModule } from "@nestjs/config";
 import { CategoriesModule } from "./categories/categories.module";
-import { IngredientsModule } from './ingredients/ingredients.module';
+import { IngredientsModule } from "./ingredients/ingredients.module";
+import { CollectionsModule } from "./collections/collections.module";
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { IngredientsModule } from './ingredients/ingredients.module';
     RecipesModule,
     CategoriesModule,
     IngredientsModule,
+    CollectionsModule,
   ],
   controllers: [AppController],
   providers: [
