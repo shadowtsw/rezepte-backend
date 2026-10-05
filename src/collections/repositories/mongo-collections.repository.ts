@@ -2,6 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import type { Collection } from "mongodb";
 import { COLLECTION_COLLECTION } from "../collection.constants";
 import type {
+  CollectionItem,
   CollectionRecipeItem,
   RecipeCollection,
 } from "../collection.model";
@@ -68,5 +69,106 @@ export class MongoCollectionsRepository implements CollectionRepository {
     );
 
     return updatedCollection ?? undefined;
+  }
+
+  async updateCollectionItems(
+    id: string,
+    version: number,
+    items: CollectionItem[],
+  ): Promise<RecipeCollection | undefined> {
+    const updatedCollection = await this.collection.findOneAndUpdate(
+      {
+        id,
+        version,
+      },
+      {
+        $set: {
+          items,
+        },
+        $inc: {
+          version: 1,
+        },
+      },
+      {
+        returnDocument: "after",
+      },
+    );
+
+    return updatedCollection ?? undefined;
+  }
+
+  async removeRecipeReferences(recipeId: string): Promise<void> {
+    await this.collection.updateMany(
+      {
+        $or: [
+          {
+            items: {
+              $elemMatch: {
+                type: "recipe",
+                recipeId,
+              },
+            },
+          },
+          {
+            items: {
+              $elemMatch: {
+                type: "group",
+                "recipes.recipeId": recipeId,
+              },
+            },
+          },
+        ],
+      },
+      [
+        {
+          $set: {
+            items: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: "$items",
+                    as: "item",
+                    cond: {
+                      $not: {
+                        $and: [
+                          { $eq: ["$$item.type", "recipe"] },
+                          { $eq: ["$$item.recipeId", recipeId] },
+                        ],
+                      },
+                    },
+                  },
+                },
+                as: "item",
+                in: {
+                  $cond: [
+                    { $eq: ["$$item.type", "group"] },
+                    {
+                      $mergeObjects: [
+                        "$$item",
+                        {
+                          recipes: {
+                            $filter: {
+                              input: "$$item.recipes",
+                              as: "recipe",
+                              cond: {
+                                $ne: ["$$recipe.recipeId", recipeId],
+                              },
+                            },
+                          },
+                        },
+                      ],
+                    },
+                    "$$item",
+                  ],
+                },
+              },
+            },
+            version: {
+              $add: ["$version", 1],
+            },
+          },
+        },
+      ],
+    );
   }
 }

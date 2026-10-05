@@ -1,4 +1,5 @@
 import type {
+  CollectionItem,
   CollectionRecipeItem,
   RecipeCollection,
 } from "../collection.model";
@@ -21,4 +22,12 @@ export interface CollectionRepository {
     collectionId: string,
     item: CollectionRecipeItem,
   ): Promise<RecipeCollection | undefined>;
+
+  updateCollectionItems(
+    id: string,
+    version: number,
+    items: CollectionItem[],
+  ): Promise<RecipeCollection | undefined>;
+
+  removeRecipeReferences(recipeId: string): Promise<void>;
 }
