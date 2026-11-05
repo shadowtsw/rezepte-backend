@@ -1,9 +1,11 @@
 import {
   IsArray,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
+  Min,
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
@@ -16,7 +18,8 @@ class IngredientUsageDto {
   ingredient!: string;
 
   @IsOptional()
-  @IsInt()
+  @IsNumber()
+  @Min(0)
   amount?: number;
 
   @IsOptional()

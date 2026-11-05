@@ -77,4 +77,30 @@ describe("UpdateRecipeDto validation", () => {
       validateUpdate({ sections: sectionsWithoutUsageId }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
+
+  it("accepts decimal amounts", async () => {
+    const sectionsWithDecimalAmount = buildSectionsWithAmount(0.5);
+
+    const result = await validateUpdate({
+      sections: sectionsWithDecimalAmount,
+    });
+    const usage = result.sections?.[0].steps[0].ingredients[0];
+
+    expect(usage?.amount).toBe(0.5);
+  });
+
+  it("rejects negative amounts", async () => {
+    const sectionsWithNegativeAmount = buildSectionsWithAmount(-1);
+
+    await expect(
+      validateUpdate({ sections: sectionsWithNegativeAmount }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
 });
+
+function buildSectionsWithAmount(amount: number) {
+  const step = validSections[0].steps[0];
+  const usage = { ...step.ingredients[0], amount };
+
+  return [{ ...validSections[0], steps: [{ ...step, ingredients: [usage] }] }];
+}
