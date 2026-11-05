@@ -106,6 +106,16 @@ describe("CollectionsService", () => {
     });
   });
 
+  describe("handleRecipeDeleted", () => {
+    it("removes the recipe's references from all collections", async () => {
+      await service.handleRecipeDeleted({ recipeId: PUBLISHED_RECIPE_ID });
+
+      expect(collectionRepository.removeRecipeReferences.mock.calls).toEqual([
+        [PUBLISHED_RECIPE_ID],
+      ]);
+    });
+  });
+
   describe("addRecipeToCollection", () => {
     it("adds a published recipe as a new item with its own id", async () => {
       collectionRepository.findById.mockResolvedValue(buildCollection());

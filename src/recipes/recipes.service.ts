@@ -12,6 +12,11 @@ import { randomUUID } from "node:crypto";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
 import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
 import { IngredientsService } from "src/ingredients/ingredients.service";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import {
+  RECIPE_DELETED_EVENT,
+  RecipeDeletedEvent,
+} from "./events/recipe-deleted.event";
 
 @Injectable()
 export class RecipesService {
@@ -19,6 +24,7 @@ export class RecipesService {
     @Inject(RECIPE_REPOSITORY)
     private readonly recipeRepository: RecipeRepository,
     private readonly ingredientsService: IngredientsService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   getAllRecipes(
@@ -80,6 +86,12 @@ export class RecipesService {
     if (!deleted) {
       throw new NotFoundException(`Recipe with ID ${id} not found`);
     }
+
+    // emitAsync waits for all listeners, so the response is sent after the cleanup.
+    await this.eventEmitter.emitAsync(
+      RECIPE_DELETED_EVENT,
+      new RecipeDeletedEvent(id),
+    );
   }
 
   async updateRecipe(id: string, recipe: UpdateRecipeDto) {

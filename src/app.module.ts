@@ -6,12 +6,14 @@ import { ConfigModule } from "@nestjs/config";
 import { CategoriesModule } from "./categories/categories.module";
 import { IngredientsModule } from "./ingredients/ingredients.module";
 import { CollectionsModule } from "./collections/collections.module";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    EventEmitterModule.forRoot(),
     RecipesModule,
     CategoriesModule,
     IngredientsModule,

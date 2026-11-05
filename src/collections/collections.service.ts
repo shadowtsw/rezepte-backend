@@ -17,6 +17,11 @@ import { UpdateCollectionDto } from "./dto/update-collection.dto";
 import { RecipesService } from "src/recipes/recipes.service";
 import { AddRecipeToCollectionDto } from "./dto/add-recipe-to-collection.dto";
 import { UpdateCollectionItemsDto } from "./dto/update-collection-items.dto";
+import { OnEvent } from "@nestjs/event-emitter";
+import {
+  RECIPE_DELETED_EVENT,
+  RecipeDeletedEvent,
+} from "src/recipes/events/recipe-deleted.event";
 
 @Injectable()
 export class CollectionsService {
@@ -71,6 +76,12 @@ export class CollectionsService {
     if (!deleted) {
       throw new NotFoundException(`Collection with ID ${id} not found`);
     }
+  }
+
+  // suppressErrors: false lets a failed cleanup reach the DELETE request instead of being swallowed.
+  @OnEvent(RECIPE_DELETED_EVENT, { suppressErrors: false })
+  async handleRecipeDeleted(event: RecipeDeletedEvent): Promise<void> {
+    await this.collectionRepository.removeRecipeReferences(event.recipeId);
   }
 
   async addRecipeToCollection(
