@@ -15,3 +15,8 @@ jobs:
 
       - name: Deploy
         run: docker compose up -d --build
+
+      # Every build re-tags :beta, leaving the old image as <none>. Clean up so the disk doesn't fill.
+      - name: Clean up old images
+        if: always()
+        run: docker image prune -f && docker builder prune -f --filter until=168h
