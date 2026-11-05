@@ -4,6 +4,7 @@ import { RecipeCategory } from "../category.model";
 import { CategoryRepository } from "./category.repository";
 import { CATEGORY_COLLECTION } from "../category.constants";
 import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
+import { WITHOUT_MONGO_ID } from "src/database/database.constants";
 
 @Injectable()
 export class MongoCategoriesRepository implements CategoryRepository {
@@ -13,18 +14,21 @@ export class MongoCategoriesRepository implements CategoryRepository {
   ) {}
 
   async getAllCategories(): Promise<RecipeCategory[]> {
-    return this.collection.find({}).toArray();
+    return this.collection.find({}, { projection: WITHOUT_MONGO_ID }).toArray();
   }
 
   async findById(id: string): Promise<RecipeCategory | undefined> {
-    const category = await this.collection.findOne({ id });
+    const category = await this.collection.findOne(
+      { id },
+      { projection: WITHOUT_MONGO_ID },
+    );
 
     return category ?? undefined;
   }
 
   async createCategory(category: RecipeCategory): Promise<RecipeCategory> {
     try {
-      await this.collection.insertOne(category);
+      await this.collection.insertOne({ ...category });
 
       return category;
     } catch (error) {
@@ -45,7 +49,7 @@ export class MongoCategoriesRepository implements CategoryRepository {
     const updatedDocument = await this.collection.findOneAndUpdate(
       { id },
       { $set: category },
-      { returnDocument: "after" },
+      { returnDocument: "after", projection: WITHOUT_MONGO_ID },
     );
 
     return updatedDocument ?? undefined;

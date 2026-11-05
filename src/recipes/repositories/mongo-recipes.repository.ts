@@ -5,6 +5,7 @@ import { RecipeRepository } from "./recipe.repository";
 import { RECIPE_COLLECTION } from "../recipe.constants";
 import { MongoServerError } from "mongodb";
 import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
+import { WITHOUT_MONGO_ID } from "src/database/database.constants";
 
 @Injectable()
 export class MongoRecipesRepository implements RecipeRepository {
@@ -35,18 +36,23 @@ export class MongoRecipesRepository implements RecipeRepository {
       filter.status = { $ne: "archived" };
     }
 
-    return this.collection.find(filter).toArray();
+    return this.collection
+      .find(filter, { projection: WITHOUT_MONGO_ID })
+      .toArray();
   }
 
   async findById(id: string): Promise<Recipe | undefined> {
-    const recipe = await this.collection.findOne({ id });
+    const recipe = await this.collection.findOne(
+      { id },
+      { projection: WITHOUT_MONGO_ID },
+    );
 
     return recipe ?? undefined;
   }
 
   async saveRecipe(recipe: Recipe): Promise<Recipe> {
     try {
-      await this.collection.insertOne(recipe);
+      await this.collection.insertOne({ ...recipe });
 
       return recipe;
     } catch (error) {
@@ -76,7 +82,7 @@ export class MongoRecipesRepository implements RecipeRepository {
         $set: recipe,
         $inc: { version: 1 },
       },
-      { returnDocument: "after" },
+      { returnDocument: "after", projection: WITHOUT_MONGO_ID },
     );
 
     return updatedDocument ?? undefined;
@@ -86,7 +92,7 @@ export class MongoRecipesRepository implements RecipeRepository {
     const updatedDocument = await this.collection.findOneAndUpdate(
       { id },
       { $set: { status: "published" } },
-      { returnDocument: "after" },
+      { returnDocument: "after", projection: WITHOUT_MONGO_ID },
     );
 
     return updatedDocument ?? undefined;
@@ -96,7 +102,7 @@ export class MongoRecipesRepository implements RecipeRepository {
     const updatedDocument = await this.collection.findOneAndUpdate(
       { id },
       { $set: { status: "archived" } },
-      { returnDocument: "after" },
+      { returnDocument: "after", projection: WITHOUT_MONGO_ID },
     );
 
     return updatedDocument ?? undefined;
@@ -106,7 +112,7 @@ export class MongoRecipesRepository implements RecipeRepository {
     const updatedDocument = await this.collection.findOneAndUpdate(
       { id },
       { $set: { status: "draft" } },
-      { returnDocument: "after" },
+      { returnDocument: "after", projection: WITHOUT_MONGO_ID },
     );
 
     return updatedDocument ?? undefined;
@@ -120,6 +126,7 @@ export class MongoRecipesRepository implements RecipeRepository {
         { "categories.id": categoryId, status: "published" },
         {
           projection: {
+            ...WITHOUT_MONGO_ID,
             id: 1,
             title: 1,
           },

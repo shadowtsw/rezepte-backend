@@ -7,6 +7,7 @@ import type {
   RecipeCollection,
 } from "../collection.model";
 import type { CollectionRepository } from "./collection.repository";
+import { WITHOUT_MONGO_ID } from "src/database/database.constants";
 
 @Injectable()
 export class MongoCollectionsRepository implements CollectionRepository {
@@ -16,11 +17,14 @@ export class MongoCollectionsRepository implements CollectionRepository {
   ) {}
 
   async getAllCollections(): Promise<RecipeCollection[]> {
-    return this.collection.find({}).toArray();
+    return this.collection.find({}, { projection: WITHOUT_MONGO_ID }).toArray();
   }
 
   async findById(id: string): Promise<RecipeCollection | undefined> {
-    const collection = await this.collection.findOne({ id });
+    const collection = await this.collection.findOne(
+      { id },
+      { projection: WITHOUT_MONGO_ID },
+    );
 
     return collection ?? undefined;
   }
@@ -28,7 +32,7 @@ export class MongoCollectionsRepository implements CollectionRepository {
   async createCollection(
     collection: RecipeCollection,
   ): Promise<RecipeCollection> {
-    await this.collection.insertOne(collection);
+    await this.collection.insertOne({ ...collection });
 
     return collection;
   }
@@ -43,7 +47,7 @@ export class MongoCollectionsRepository implements CollectionRepository {
         $set: { name },
         $inc: { version: 1 },
       },
-      { returnDocument: "after" },
+      { returnDocument: "after", projection: WITHOUT_MONGO_ID },
     );
 
     return updatedCollection ?? undefined;
@@ -65,7 +69,7 @@ export class MongoCollectionsRepository implements CollectionRepository {
         $push: { items: item },
         $inc: { version: 1 },
       },
-      { returnDocument: "after" },
+      { returnDocument: "after", projection: WITHOUT_MONGO_ID },
     );
 
     return updatedCollection ?? undefined;
@@ -91,6 +95,7 @@ export class MongoCollectionsRepository implements CollectionRepository {
       },
       {
         returnDocument: "after",
+        projection: WITHOUT_MONGO_ID,
       },
     );
 

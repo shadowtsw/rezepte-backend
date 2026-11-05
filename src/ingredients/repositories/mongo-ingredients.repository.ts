@@ -5,6 +5,7 @@ import { IngredientRepository } from "./ingredient.repository";
 import { INGREDIENT_COLLECTION } from "../ingredient.constants";
 import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
 import { normalizeIngredientName } from "../ingredient.utils";
+import { WITHOUT_MONGO_ID } from "src/database/database.constants";
 
 @Injectable()
 export class MongoIngredientsRepository implements IngredientRepository {
@@ -26,27 +27,33 @@ export class MongoIngredientsRepository implements IngredientRepository {
       };
     }
 
-    return this.collection.find(filter).toArray();
+    return this.collection
+      .find(filter, { projection: WITHOUT_MONGO_ID })
+      .toArray();
   }
 
   async findById(id: string): Promise<Ingredient | undefined> {
-    const ingredient = await this.collection.findOne({ id });
+    const ingredient = await this.collection.findOne(
+      { id },
+      { projection: WITHOUT_MONGO_ID },
+    );
     return ingredient ?? undefined;
   }
 
   async findByNormalizedName(
     normalizedName: string,
   ): Promise<Ingredient | undefined> {
-    const ingredient = await this.collection.findOne({
-      normalizedName,
-    });
+    const ingredient = await this.collection.findOne(
+      { normalizedName },
+      { projection: WITHOUT_MONGO_ID },
+    );
 
     return ingredient ?? undefined;
   }
 
   async createIngredient(ingredient: Ingredient): Promise<Ingredient> {
     try {
-      await this.collection.insertOne(ingredient);
+      await this.collection.insertOne({ ...ingredient });
       return ingredient;
     } catch (error) {
       if (error instanceof MongoServerError && error.code === 11000) {
@@ -73,7 +80,7 @@ export class MongoIngredientsRepository implements IngredientRepository {
             normalizedName,
           },
         },
-        { returnDocument: "after" },
+        { returnDocument: "after", projection: WITHOUT_MONGO_ID },
       );
 
       return updatedIngredient ?? undefined;
