@@ -10,3 +10,4 @@
 | 2026-11-05 | PUT and PATCH on recipes behave the same (partial `$set`) | frontend always sends the full recipe; simpler than separate logic |
 | 2026-11-05 | Ingredient usages have their own `id`; validation uses `whitelist` | stable references for reordering, duplicates and the cooking checklist; PATCH could change `status` before |
 | 2026-11-05 | Modular monolith with in-process events (`@nestjs/event-emitter` 3.x), no microservices | avoids circular module imports without network, broker and split data; v12 is ESM-only and breaks Jest |
+| 2026-11-05 | Groups stay when their last recipe is removed (also on recipe deletion) | a group is an independent unit that can be refilled |
