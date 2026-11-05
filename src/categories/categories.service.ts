@@ -8,9 +8,12 @@ import { RecipeCategory } from "./category.model";
 import { CATEGORY_REPOSITORY } from "./category.constants";
 import type { CategoryRepository } from "./repositories/category.repository";
 import { RecipesService } from "src/recipes/recipes.service";
+import type { Recipe } from "src/recipes/recipe.model";
 import { randomUUID } from "crypto";
 import { CreateCategoryDto } from "./dto/create-category.dto";
 import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
+import { apiError } from "src/common/api/api-response";
+import { MESSAGE_ID } from "src/messages/message-ids";
 
 @Injectable()
 export class CategoriesService {
@@ -28,17 +31,13 @@ export class CategoriesService {
     const category = await this.categoryRepository.findById(id);
 
     if (!category) {
-      throw new NotFoundException(`Category with id "${id}" not found`);
+      throw categoryNotFound(id);
     }
 
     return category;
   }
 
-  async createCategory(
-    category: CreateCategoryDto,
-  ): Promise<{ message: string; newCategory: RecipeCategory }> {
-    console.log(category);
-
+  async createCategory(category: CreateCategoryDto): Promise<RecipeCategory> {
     const newCategory: RecipeCategory = {
       ...category,
       id: category.id ?? randomUUID(),
@@ -48,13 +47,13 @@ export class CategoriesService {
       await this.categoryRepository.createCategory(newCategory);
     } catch (error) {
       if (error instanceof DuplicateKeyError) {
-        throw new ConflictException(error.message);
+        throw new ConflictException(apiError(MESSAGE_ID.categoryAlreadyExists));
       }
 
       throw error;
     }
 
-    return { message: "Category created successfully", newCategory };
+    return newCategory;
   }
 
   async updateCategory(
@@ -67,17 +66,19 @@ export class CategoriesService {
     );
 
     if (!updatedCategory) {
-      throw new NotFoundException(`Category with id "${id}" not found`);
+      throw categoryNotFound(id);
     }
 
     return updatedCategory;
   }
 
-  async getRecipesByCategory(categoryId: string) {
+  async getRecipesByCategory(
+    categoryId: string,
+  ): Promise<Pick<Recipe, "id" | "title">[]> {
     const category = await this.categoryRepository.findById(categoryId);
 
     if (!category) {
-      throw new NotFoundException(`Category with id "${categoryId}" not found`);
+      throw categoryNotFound(categoryId);
     }
 
     return this.recipesService.getRecipesByCategory(categoryId);
@@ -87,15 +88,21 @@ export class CategoriesService {
     await this.recipesService.removeCategoryFromRecipes(categoryId);
   }
 
-  async deleteCategory(id: string): Promise<boolean> {
+  async deleteCategory(id: string): Promise<void> {
     const category = await this.categoryRepository.findById(id);
 
     if (!category) {
-      throw new NotFoundException(`Category with id "${id}" not found`);
+      throw categoryNotFound(id);
     }
 
     await this.recipesService.removeCategoryFromRecipes(id);
 
-    return this.categoryRepository.deleteCategory(id);
+    await this.categoryRepository.deleteCategory(id);
   }
+}
+
+function categoryNotFound(id: string): NotFoundException {
+  return new NotFoundException(
+    apiError(MESSAGE_ID.categoryNotFound, { params: { id } }),
+  );
 }

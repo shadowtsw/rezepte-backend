@@ -29,7 +29,7 @@ async function envelope(handlerName: keyof ExampleController, data: unknown) {
     ExampleController.prototype,
     handlerName,
   )?.value as () => void;
-  const context = { getHandler: () => handler } as ExecutionContext;
+  const context = { getHandler: () => handler } as unknown as ExecutionContext;
 
   return lastValueFrom(
     interceptor.intercept(context, { handle: () => of(data) }),

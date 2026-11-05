@@ -12,6 +12,8 @@ import { INGREDIENT_REPOSITORY } from "./ingredient.constants";
 import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
 import { normalizeIngredientName } from "./ingredient.utils";
 import { UpdateIngredientDto } from "./dto/update-ingredient.dto";
+import { apiError } from "src/common/api/api-response";
+import { MESSAGE_ID } from "src/messages/message-ids";
 
 @Injectable()
 export class IngredientsService {
@@ -28,15 +30,13 @@ export class IngredientsService {
     const ingredient = await this.ingredientRepository.findById(id);
 
     if (!ingredient) {
-      throw new NotFoundException(`Ingredient with ID ${id} not found`);
+      throw ingredientNotFound(id);
     }
 
     return ingredient;
   }
 
-  async createIngredient(
-    ingredient: CreateIngredientDto,
-  ): Promise<{ message: string; newIngredient: Ingredient }> {
+  async createIngredient(ingredient: CreateIngredientDto): Promise<Ingredient> {
     const newIngredient: Ingredient = {
       id: randomUUID(),
       name: ingredient.name,
@@ -47,16 +47,13 @@ export class IngredientsService {
       await this.ingredientRepository.createIngredient(newIngredient);
     } catch (error) {
       if (error instanceof DuplicateKeyError) {
-        throw new ConflictException(error.message);
+        throw ingredientAlreadyExists(ingredient.name);
       }
 
       throw error;
     }
 
-    return {
-      message: "Ingredient created successfully",
-      newIngredient,
-    };
+    return newIngredient;
   }
 
   async findOrCreateIngredient(name: string): Promise<Ingredient> {
@@ -106,13 +103,13 @@ export class IngredientsService {
         );
 
       if (!updatedIngredient) {
-        throw new NotFoundException(`Ingredient with ID ${id} not found`);
+        throw ingredientNotFound(id);
       }
 
       return updatedIngredient;
     } catch (error) {
       if (error instanceof DuplicateKeyError) {
-        throw new ConflictException(`Ingredient "${dto.name}" already exists`);
+        throw ingredientAlreadyExists(dto.name);
       }
 
       throw error;
@@ -123,7 +120,19 @@ export class IngredientsService {
     const deleted = await this.ingredientRepository.deleteIngredient(id);
 
     if (!deleted) {
-      throw new NotFoundException(`Ingredient with ID ${id} not found`);
+      throw ingredientNotFound(id);
     }
   }
+}
+
+function ingredientNotFound(id: string): NotFoundException {
+  return new NotFoundException(
+    apiError(MESSAGE_ID.ingredientNotFound, { params: { id } }),
+  );
+}
+
+function ingredientAlreadyExists(name: string): ConflictException {
+  return new ConflictException(
+    apiError(MESSAGE_ID.ingredientAlreadyExists, { params: { name } }),
+  );
 }

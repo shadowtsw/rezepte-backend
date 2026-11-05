@@ -1,4 +1,8 @@
-import { ConflictException, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  HttpException,
+  NotFoundException,
+} from "@nestjs/common";
 
 import type { RecipesService } from "src/recipes/recipes.service";
 import type { Recipe, RecipeStatus } from "src/recipes/recipe.model";
@@ -10,6 +14,19 @@ import type { CollectionRepository } from "./repositories/collection.repository"
 const COLLECTION_ID = "collection-1";
 const PUBLISHED_RECIPE_ID = "recipe-published";
 const DRAFT_RECIPE_ID = "recipe-draft";
+
+/** Resolves with the `apiError` payload of the HttpException the promise rejects with. */
+async function errorPayloadOf(promise: Promise<unknown>): Promise<unknown> {
+  try {
+    await promise;
+  } catch (error) {
+    if (error instanceof HttpException) {
+      return error.getResponse();
+    }
+  }
+
+  throw new Error("Expected the promise to reject with an HttpException");
+}
 
 function buildRecipe(id: string, status: RecipeStatus): Recipe {
   return {
@@ -256,6 +273,25 @@ describe("CollectionsService", () => {
       await expect(
         service.updateCollectionItems(COLLECTION_ID, { version: 1, items: [] }),
       ).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it("sends message IDs with params for its errors", async () => {
+      const outdatedVersion = service.updateCollectionItems(COLLECTION_ID, {
+        version: 1,
+        items: [],
+      });
+      const unpublishedRecipe = updateItems([
+        { type: "recipe", recipeId: DRAFT_RECIPE_ID },
+      ]);
+
+      await expect(errorPayloadOf(outdatedVersion)).resolves.toEqual({
+        message: "COLLECTION_VERSION_CONFLICT",
+        params: { id: COLLECTION_ID, currentVersion: 2 },
+      });
+      await expect(errorPayloadOf(unpublishedRecipe)).resolves.toEqual({
+        message: "COLLECTION_RECIPE_NOT_PUBLISHED",
+        params: { recipeId: DRAFT_RECIPE_ID },
+      });
     });
 
     it("throws ConflictException when the collection changed during the update", async () => {

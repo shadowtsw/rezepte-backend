@@ -17,6 +17,8 @@ import { UpdateCollectionDto } from "./dto/update-collection.dto";
 import { RecipesService } from "src/recipes/recipes.service";
 import { AddRecipeToCollectionDto } from "./dto/add-recipe-to-collection.dto";
 import { UpdateCollectionItemsDto } from "./dto/update-collection-items.dto";
+import { apiError } from "src/common/api/api-response";
+import { MESSAGE_ID, type MessageId } from "src/messages/message-ids";
 import { OnEvent } from "@nestjs/event-emitter";
 import {
   RECIPE_DELETED_EVENT,
@@ -39,7 +41,7 @@ export class CollectionsService {
     const collection = await this.collectionRepository.findById(id);
 
     if (!collection) {
-      throw new NotFoundException(`Collection with ID ${id} not found`);
+      throw collectionNotFound(id);
     }
 
     return collection;
@@ -64,7 +66,7 @@ export class CollectionsService {
       await this.collectionRepository.updateCollectionName(id, dto.name.trim());
 
     if (!updatedCollection) {
-      throw new NotFoundException(`Collection with ID ${id} not found`);
+      throw collectionNotFound(id);
     }
 
     return updatedCollection;
@@ -74,7 +76,7 @@ export class CollectionsService {
     const deleted = await this.collectionRepository.deleteCollection(id);
 
     if (!deleted) {
-      throw new NotFoundException(`Collection with ID ${id} not found`);
+      throw collectionNotFound(id);
     }
   }
 
@@ -91,17 +93,13 @@ export class CollectionsService {
     const recipe = await this.recipesService.getRecipeById(dto.recipeId);
 
     if (recipe.status !== "published") {
-      throw new ConflictException(
-        `Recipe with ID ${dto.recipeId} is not published`,
-      );
+      throw recipeNotPublished(dto.recipeId);
     }
 
     const collection = await this.collectionRepository.findById(collectionId);
 
     if (!collection) {
-      throw new NotFoundException(
-        `Collection with ID ${collectionId} not found`,
-      );
+      throw collectionNotFound(collectionId);
     }
 
     const item: CollectionRecipeItem = {
@@ -116,9 +114,7 @@ export class CollectionsService {
     );
 
     if (!updatedCollection) {
-      throw new NotFoundException(
-        `Collection with ID ${collectionId} not found`,
-      );
+      throw collectionNotFound(collectionId);
     }
 
     return updatedCollection;
@@ -129,14 +125,12 @@ export class CollectionsService {
     const collection = await this.collectionRepository.findById(id);
 
     if (!collection) {
-      throw new NotFoundException(`Collection with ID ${id} not found`);
+      throw collectionNotFound(id);
     }
 
     // 2. Version prüfen
     if (collection.version !== dto.version) {
-      throw new ConflictException(
-        `Collection has been modified. Expected version ${dto.version}, current version is ${collection.version}`,
-      );
+      throw versionConflict(id, collection.version);
     }
 
     // 3. Fehlende IDs erzeugen
@@ -167,15 +161,11 @@ export class CollectionsService {
     // 5. Bestehende Item-IDs dürfen ihren Typ nicht ändern
     for (const item of items) {
       if (item.type === "recipe" && existingGroupIds.has(item.id)) {
-        throw new ConflictException(
-          `Collection item with ID ${item.id} cannot change from group to recipe`,
-        );
+        throw itemConflict(MESSAGE_ID.collectionItemTypeChanged, item.id);
       }
 
       if (item.type === "group" && existingRecipeItems.has(item.id)) {
-        throw new ConflictException(
-          `Collection item with ID ${item.id} cannot change from recipe to group`,
-        );
+        throw itemConflict(MESSAGE_ID.collectionItemTypeChanged, item.id);
       }
     }
 
@@ -187,9 +177,7 @@ export class CollectionsService {
         const existingRecipeId = existingRecipeItems.get(recipe.id);
 
         if (existingRecipeId && existingRecipeId !== recipe.recipeId) {
-          throw new ConflictException(
-            `Collection item with ID ${recipe.id} cannot reference another recipe`,
-          );
+          throw itemConflict(MESSAGE_ID.collectionItemRecipeChanged, recipe.id);
         }
       }
     }
@@ -216,7 +204,7 @@ export class CollectionsService {
 
     if (hasDuplicateItemIds) {
       throw new ConflictException(
-        "Item IDs must be unique within a collection",
+        apiError(MESSAGE_ID.collectionItemIdsNotUnique),
       );
     }
 
@@ -225,9 +213,7 @@ export class CollectionsService {
       const recipe = await this.recipesService.getRecipeById(item.recipeId);
 
       if (recipe.status !== "published") {
-        throw new ConflictException(
-          `Recipe with ID ${item.recipeId} is not published`,
-        );
+        throw recipeNotPublished(item.recipeId);
       }
     }
 
@@ -242,12 +228,10 @@ export class CollectionsService {
       const currentCollection = await this.collectionRepository.findById(id);
 
       if (!currentCollection) {
-        throw new NotFoundException(`Collection with ID ${id} not found`);
+        throw collectionNotFound(id);
       }
 
-      throw new ConflictException(
-        `Collection has been modified. Expected version ${dto.version}, current version is ${currentCollection.version}`,
-      );
+      throw versionConflict(id, currentCollection.version);
     }
 
     return updatedCollection;
@@ -276,4 +260,32 @@ export class CollectionsService {
       };
     });
   }
+}
+
+function collectionNotFound(id: string): NotFoundException {
+  return new NotFoundException(
+    apiError(MESSAGE_ID.collectionNotFound, { params: { id } }),
+  );
+}
+
+function recipeNotPublished(recipeId: string): ConflictException {
+  return new ConflictException(
+    apiError(MESSAGE_ID.collectionRecipeNotPublished, { params: { recipeId } }),
+  );
+}
+
+/** `currentVersion` lets the client tell how far behind it is. */
+function versionConflict(
+  id: string,
+  currentVersion: number,
+): ConflictException {
+  return new ConflictException(
+    apiError(MESSAGE_ID.collectionVersionConflict, {
+      params: { id, currentVersion },
+    }),
+  );
+}
+
+function itemConflict(messageId: MessageId, itemId: string): ConflictException {
+  return new ConflictException(apiError(messageId, { params: { itemId } }));
 }

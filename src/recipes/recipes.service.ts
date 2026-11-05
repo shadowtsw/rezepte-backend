@@ -17,6 +17,8 @@ import {
   RECIPE_DELETED_EVENT,
   RecipeDeletedEvent,
 } from "./events/recipe-deleted.event";
+import { apiError } from "src/common/api/api-response";
+import { MESSAGE_ID } from "src/messages/message-ids";
 
 @Injectable()
 export class RecipesService {
@@ -39,17 +41,17 @@ export class RecipesService {
     );
   }
 
-  async getRecipeById(id: string) {
+  async getRecipeById(id: string): Promise<Recipe> {
     const recipe = await this.recipeRepository.findById(id);
 
     if (!recipe) {
-      throw new NotFoundException(`Recipe with ID ${id} not found`);
+      throw recipeNotFound(id);
     }
 
     return recipe;
   }
 
-  async createRecipe(recipe: CreateRecipeDto) {
+  async createRecipe(recipe: CreateRecipeDto): Promise<Recipe> {
     const newRecipe: Recipe = {
       ...recipe,
       id: recipe.id ?? randomUUID(),
@@ -71,20 +73,24 @@ export class RecipesService {
       await this.recipeRepository.saveRecipe(newRecipe);
     } catch (error) {
       if (error instanceof DuplicateKeyError) {
-        throw new ConflictException(error.message);
+        throw new ConflictException(
+          apiError(MESSAGE_ID.recipeAlreadyExists, {
+            params: { id: newRecipe.id },
+          }),
+        );
       }
 
       throw error;
     }
 
-    return { message: "Recipe created successfully", newRecipe };
+    return newRecipe;
   }
 
-  async deleteRecipe(id: string) {
+  async deleteRecipe(id: string): Promise<void> {
     const deleted = await this.recipeRepository.deleteRecipe(id);
 
     if (!deleted) {
-      throw new NotFoundException(`Recipe with ID ${id} not found`);
+      throw recipeNotFound(id);
     }
 
     // emitAsync waits for all listeners, so the response is sent after the cleanup.
@@ -94,7 +100,7 @@ export class RecipesService {
     );
   }
 
-  async updateRecipe(id: string, recipe: UpdateRecipeDto) {
+  async updateRecipe(id: string, recipe: UpdateRecipeDto): Promise<Recipe> {
     if (recipe.sections) {
       for (const section of recipe.sections) {
         for (const step of section.steps) {
@@ -110,52 +116,40 @@ export class RecipesService {
     const updated = await this.recipeRepository.updateRecipe(id, recipe);
 
     if (!updated) {
-      throw new NotFoundException(`Recipe with ID ${id} not found`);
+      throw recipeNotFound(id);
     }
 
-    return { message: "Recipe updated successfully", updatedRecipe: updated };
+    return updated;
   }
 
-  async publishRecipe(id: string): Promise<{
-    message: string;
-    updatedRecipe: Recipe;
-  }> {
+  async publishRecipe(id: string): Promise<Recipe> {
     const updated = await this.recipeRepository.publishRecipe(id);
 
     if (!updated) {
-      throw new NotFoundException(`Recipe with ID ${id} not found`);
+      throw recipeNotFound(id);
     }
 
-    return { message: "Recipe published successfully", updatedRecipe: updated };
+    return updated;
   }
 
-  async archiveRecipe(id: string): Promise<{
-    message: string;
-    updatedRecipe: Recipe;
-  }> {
+  async archiveRecipe(id: string): Promise<Recipe> {
     const updated = await this.recipeRepository.archiveRecipe(id);
 
     if (!updated) {
-      throw new NotFoundException(`Recipe with ID ${id} not found`);
+      throw recipeNotFound(id);
     }
 
-    return { message: "Recipe archived successfully", updatedRecipe: updated };
+    return updated;
   }
 
-  async draftRecipe(id: string): Promise<{
-    message: string;
-    updatedRecipe: Recipe;
-  }> {
+  async draftRecipe(id: string): Promise<Recipe> {
     const updated = await this.recipeRepository.draftRecipe(id);
 
     if (!updated) {
-      throw new NotFoundException(`Recipe with ID ${id} not found`);
+      throw recipeNotFound(id);
     }
 
-    return {
-      message: "Recipe set to draft successfully",
-      updatedRecipe: updated,
-    };
+    return updated;
   }
 
   async getRecipesByCategory(
@@ -167,4 +161,10 @@ export class RecipesService {
   async removeCategoryFromRecipes(categoryId: string): Promise<void> {
     await this.recipeRepository.removeCategoryFromRecipes(categoryId);
   }
+}
+
+function recipeNotFound(id: string): NotFoundException {
+  return new NotFoundException(
+    apiError(MESSAGE_ID.recipeNotFound, { params: { id } }),
+  );
 }

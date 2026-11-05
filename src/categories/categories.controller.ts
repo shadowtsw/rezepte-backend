@@ -10,6 +10,8 @@ import {
 import { CategoriesService } from "./categories.service";
 import { RecipeCategory } from "./category.model";
 import { CreateCategoryDto } from "./dto/create-category.dto";
+import { ResponseMessage } from "src/common/api/response-message.decorator";
+import { MESSAGE_ID } from "src/messages/message-ids";
 
 @Controller("categories")
 export class CategoriesController {
@@ -26,11 +28,13 @@ export class CategoriesController {
   }
 
   @Post()
+  @ResponseMessage(MESSAGE_ID.categoryCreated)
   async createCategory(@Body() category: CreateCategoryDto) {
     return this.categoriesService.createCategory(category);
   }
 
   @Put(":id")
+  @ResponseMessage(MESSAGE_ID.categoryUpdated)
   async updateCategory(
     @Param("id") id: string,
     @Body() dto: CreateCategoryDto,
@@ -49,6 +53,7 @@ export class CategoriesController {
   }
 
   @Delete(":id")
+  @ResponseMessage(MESSAGE_ID.categoryDeleted)
   async deleteCategory(@Param("id") id: string) {
     return this.categoriesService.deleteCategory(id);
   }
