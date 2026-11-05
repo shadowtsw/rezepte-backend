@@ -28,7 +28,8 @@ See `src/**/*.model.ts` for the full types.
 - **Recipe**: `id`, `title`, `servings`, `tags`, `categories: { id }[]`, `sections`, `notes?`, `status`, `version`
   - **Section**: `id`, `title`, `steps`
   - **Step**: `id`, `title`, `instruction`, `duration?`, `ingredients`
-  - **IngredientUsage**: `ingredient` (name), `amount?`, `unit?`. Has **no** own ID yet.
+  - **IngredientUsage**: `id`, `ingredient` (name), `amount?`, `unit?`. The `id` identifies this usage in the step
+    (same ingredient can appear several times); it is not the ID from the `ingredients` registry.
 - **Category**: `id`, `name`
 - **Collection**: `id`, `name`, `version`, `items`
   - item `{ id, type: "recipe", recipeId }` or `{ id, type: "group", name, recipes: { id, recipeId }[] }`
@@ -37,7 +38,8 @@ See `src/**/*.model.ts` for the full types.
 
 - `common/interceptors/logging.interceptor.ts`: logs method, URL, status, duration for every request.
 - `common/errors/duplicate-key.error.ts`: repositories map Mongo `E11000` to this; services turn it into `409`.
-- Global `ValidationPipe` with `transform: true` (no `whitelist` yet).
+- Global `ValidationPipe` (`common/pipes/validation-pipe.options.ts`) with `transform` and `whitelist`:
+  properties not declared in the DTO are stripped silently (e.g. `status`, `version` on PATCH).
 
 ## Known gaps
 

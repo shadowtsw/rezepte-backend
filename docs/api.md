@@ -4,13 +4,15 @@ In production the reverse proxy serves the API under `/api/...`. Locally the Vit
 
 ## Recipes
 
+Unknown properties in request bodies are stripped. `id`, `status` and `version` cannot be set via PATCH/PUT.
+
 | Method | Path | Notes |
 | --- | --- | --- |
 | GET | `/recipes` | query: `categoryId`, `uncategorized=true`, `status` |
 | GET | `/recipes/:id` | 404 if missing |
 | POST | `/recipes` | creates as `draft`, `version: 1` |
 | PATCH | `/recipes/:id` | partial update, never changes `status`; returns `{ message, updatedRecipe }` |
-| PUT | `/recipes/:id` | currently identical to PATCH (partial update) |
+| PUT | `/recipes/:id` | identical to PATCH by design (partial update) |
 | DELETE | `/recipes/:id` | |
 | POST | `/recipes/:id/publish` | status → `published` |
 | POST | `/recipes/:id/archive` | status → `archived` |
