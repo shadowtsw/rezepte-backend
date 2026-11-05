@@ -34,15 +34,24 @@ See `src/**/*.model.ts` for the full types.
 - **Collection**: `id`, `name`, `version`, `items`
   - item `{ id, type: "recipe", recipeId }` or `{ id, type: "group", name, recipes: { id, recipeId }[] }`
 
+## Events
+
+Modules that must react to changes elsewhere listen to events (`@nestjs/event-emitter`) instead of importing each other.
+
+| Event | Emitted by | Listeners |
+| --- | --- | --- |
+| `recipe.deleted` (`RecipeDeletedEvent`) | `RecipesService.deleteRecipe` | `CollectionsService.handleRecipeDeleted` removes references |
+
+Emit with `emitAsync` and listen with `suppressErrors: false`, so the request waits for listeners and sees their errors.
+
 ## Cross-cutting
 
 - `common/interceptors/logging.interceptor.ts`: logs method, URL, status, duration for every request.
 - `common/errors/duplicate-key.error.ts`: repositories map Mongo `E11000` to this; services turn it into `409`.
+- Repositories never return Mongo's `_id`: reads use the `WITHOUT_MONGO_ID` projection, inserts use a copy.
 - Global `ValidationPipe` (`common/pipes/validation-pipe.options.ts`) with `transform` and `whitelist`:
   properties not declared in the DTO are stripped silently (e.g. `status`, `version` on PATCH).
 
 ## Known gaps
 
-- Deleting a recipe does not remove its references from collections (`removeRecipeReferences` exists but is never called).
-- Responses include Mongo's internal `_id` field.
 - `AppController` still has experimental test injections (`TEST_SOMETHING*`).
