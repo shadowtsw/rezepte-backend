@@ -2,6 +2,7 @@ services:
   backend:
     build: .
     image: rezepte-backend:beta
+    restart: unless-stopped
     env_file:
       - /opt/rezepte/.env
     ports:
