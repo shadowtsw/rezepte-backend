@@ -1,7 +1,6 @@
 import { Module } from "@nestjs/common";
 import { RecipesController } from "./recipes.controller";
 import { RecipesService } from "./recipes.service";
-// import { InMemoryRecipesRepository } from "./repositories/in-memory-recipes.repository";
 import {
   COLLECTION_NAME,
   RECIPE_COLLECTION,
