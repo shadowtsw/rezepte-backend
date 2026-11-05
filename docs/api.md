@@ -2,6 +2,28 @@
 
 In production the reverse proxy serves the API under `/api/...`. Locally the Vite dev proxy strips `/api` and forwards to `localhost:3000`.
 
+## Response format
+
+Every response follows the message-response concept (guidelines `general/api-design.md`):
+
+```json
+{ "message": "RECIPE_CREATED", "error": false, "data": { "id": "…" } }
+{ "message": "RECIPE_NOT_FOUND", "error": true, "data": { "params": { "id": "…" } } }
+{ "message": "VALIDATION_FAILED", "error": true, "data": { "fields": [{ "field": "title", "message": "IS_STRING" }] } }
+```
+
+- HTTP status codes are native. Action endpoints (`/publish`, `/archive`, `/draft`, `POST /collections/:id/recipes`)
+  answer `200`, creates `201`, deletes `200` with `data: null`.
+- The tables below describe `data`.
+
+## Messages
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| GET | `/messages?lang=de` | `data` = `{ [messageId]: text }`; unknown languages fall back to `de`; `ETag` + `no-cache` |
+
+IDs live in `src/messages/message-ids.ts`, texts in `src/messages/catalog.de.ts`.
+
 ## Recipes
 
 Unknown properties in request bodies are stripped. `id`, `status` and `version` cannot be set via PATCH/PUT.
@@ -11,7 +33,7 @@ Unknown properties in request bodies are stripped. `id`, `status` and `version` 
 | GET | `/recipes` | query: `categoryId`, `uncategorized=true`, `status` |
 | GET | `/recipes/:id` | 404 if missing |
 | POST | `/recipes` | creates as `draft`, `version: 1` |
-| PATCH | `/recipes/:id` | partial update, never changes `status`; returns `{ message, updatedRecipe }` |
+| PATCH | `/recipes/:id` | partial update, never changes `status` |
 | PUT | `/recipes/:id` | identical to PATCH by design (partial update) |
 | DELETE | `/recipes/:id` | |
 | POST | `/recipes/:id/publish` | status → `published` |
