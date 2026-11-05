@@ -4,9 +4,13 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . .
+
+# A failing check stops the build, so the running container is not replaced.
+RUN npm run lint:check
+RUN npm test
 
 RUN npm run build
 
