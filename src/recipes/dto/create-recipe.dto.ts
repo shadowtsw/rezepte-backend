@@ -10,6 +10,9 @@ import { Type } from "class-transformer";
 
 class IngredientUsageDto {
   @IsString()
+  id!: string;
+
+  @IsString()
   ingredient!: string;
 
   @IsOptional()

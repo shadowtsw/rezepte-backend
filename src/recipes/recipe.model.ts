@@ -25,6 +25,7 @@ export interface RecipeStep {
 }
 
 export interface IngredientUsage {
+  id: string;
   ingredient: string;
   amount?: number;
   unit?: string;
