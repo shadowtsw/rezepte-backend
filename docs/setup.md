@@ -14,8 +14,8 @@ The frontend (`npm run dev`) proxies `/api` to this server.
 
 ## CI / deployment
 
-- Workflow `.github/workflows/test-runner.yml` runs on pushes to `main` only, on the self-hosted runner in the app LXC (192.168.178.132).
-- It runs `docker compose up -d --build`. The Dockerfile runs `npm ci`, `lint:check`, `npm test` and `build`.
+- Workflow `.github/workflows/deploy.yml` runs on pushes to `main` only, on the self-hosted runner in the app LXC (192.168.178.132).
+- It runs `docker compose build`, then `docker compose up -d`. The Dockerfile runs `npm ci`, `lint:check`, `npm test` and `build`.
   If any step fails, the running container stays untouched.
 - After the deploy, dangling images and build cache older than 7 days are removed.
 - Container: `rezepte-backend-backend-1`, port 3000, `restart: unless-stopped`, env from `/opt/rezepte/.env` on the host.
