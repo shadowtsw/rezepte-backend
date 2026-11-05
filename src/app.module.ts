@@ -7,6 +7,10 @@ import { CategoriesModule } from "./categories/categories.module";
 import { IngredientsModule } from "./ingredients/ingredients.module";
 import { CollectionsModule } from "./collections/collections.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
+import { APP_FILTER, APP_INTERCEPTOR } from "@nestjs/core";
+import { MessagesModule } from "./messages/messages.module";
+import { ResponseEnvelopeInterceptor } from "./common/api/response-envelope.interceptor";
+import { ApiExceptionFilter } from "./common/api/api-exception.filter";
 
 @Module({
   imports: [
@@ -18,10 +22,14 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
     CategoriesModule,
     IngredientsModule,
     CollectionsModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
+    // Message-response concept: every response is { message, error, data }.
+    { provide: APP_INTERCEPTOR, useClass: ResponseEnvelopeInterceptor },
+    { provide: APP_FILTER, useClass: ApiExceptionFilter },
     //* test custom injections
     { provide: "TEST_SOMETHING", useValue: "This is a test value" },
     { provide: "TEST_SOMETHING_NEW", useValue: "This is a new test value" },
