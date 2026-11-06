@@ -93,6 +93,10 @@ export class MongoIngredientsRepository implements IngredientRepository {
     }
   }
 
+  async setLastUnit(id: string, unit: string): Promise<void> {
+    await this.collection.updateOne({ id }, { $set: { lastUnit: unit } });
+  }
+
   async deleteIngredient(id: string): Promise<boolean> {
     const result = await this.collection.deleteOne({ id });
 

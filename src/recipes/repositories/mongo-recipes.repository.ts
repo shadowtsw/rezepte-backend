@@ -141,4 +141,20 @@ export class MongoRecipesRepository implements RecipeRepository {
       { $pull: { categories: { id: categoryId } } },
     );
   }
+
+  async renameIngredientInRecipes(
+    ingredientId: string,
+    name: string,
+  ): Promise<void> {
+    // $[] walks every section and step, $[usage] only the usages of this ingredient.
+    await this.collection.updateMany(
+      { "sections.steps.ingredients.ingredientId": ingredientId },
+      {
+        $set: {
+          "sections.$[].steps.$[].ingredients.$[usage].ingredient": name,
+        },
+      },
+      { arrayFilters: [{ "usage.ingredientId": ingredientId }] },
+    );
+  }
 }

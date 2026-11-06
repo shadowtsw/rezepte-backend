@@ -11,4 +11,5 @@ export interface IngredientRepository {
     normalizedName: string,
   ): Promise<Ingredient | undefined>;
   deleteIngredient(id: string): Promise<boolean>;
+  setLastUnit(id: string, unit: string): Promise<void>;
 }

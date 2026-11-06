@@ -14,6 +14,11 @@ class IngredientUsageDto {
   @IsString()
   id!: string;
 
+  // Optional for now: clients without it are matched by name (D1b, step 1).
+  @IsOptional()
+  @IsUUID()
+  ingredientId?: string;
+
   @IsString()
   ingredient!: string;
 

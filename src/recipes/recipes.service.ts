@@ -7,12 +7,23 @@ import {
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
 import type { RecipeRepository } from "./repositories/recipe.repository";
 import { RECIPE_REPOSITORY } from "./recipe.constants";
-import { Recipe, RecipeStatus } from "./recipe.model";
+import {
+  IngredientUsage,
+  Recipe,
+  RecipeSection,
+  RecipeStatus,
+  RecipeStep,
+} from "./recipe.model";
+import { isUnit } from "./units";
 import { randomUUID } from "node:crypto";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
 import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
 import { IngredientsService } from "src/ingredients/ingredients.service";
-import { EventEmitter2 } from "@nestjs/event-emitter";
+import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
+import {
+  INGREDIENT_RENAMED_EVENT,
+  IngredientRenamedEvent,
+} from "src/ingredients/events/ingredient-renamed.event";
 import {
   RECIPE_DELETED_EVENT,
   RecipeDeletedEvent,
@@ -59,15 +70,7 @@ export class RecipesService {
       version: 1,
     };
 
-    for (const section of newRecipe.sections) {
-      for (const step of section.steps) {
-        for (const ingredient of step.ingredients) {
-          await this.ingredientsService.findOrCreateIngredient(
-            ingredient.ingredient,
-          );
-        }
-      }
-    }
+    newRecipe.sections = await this.linkIngredients(newRecipe.sections);
 
     try {
       await this.recipeRepository.saveRecipe(newRecipe);
@@ -101,19 +104,11 @@ export class RecipesService {
   }
 
   async updateRecipe(id: string, recipe: UpdateRecipeDto): Promise<Recipe> {
-    if (recipe.sections) {
-      for (const section of recipe.sections) {
-        for (const step of section.steps) {
-          for (const ingredient of step.ingredients) {
-            await this.ingredientsService.findOrCreateIngredient(
-              ingredient.ingredient,
-            );
-          }
-        }
-      }
-    }
+    const changes = recipe.sections
+      ? { ...recipe, sections: await this.linkIngredients(recipe.sections) }
+      : recipe;
 
-    const updated = await this.recipeRepository.updateRecipe(id, recipe);
+    const updated = await this.recipeRepository.updateRecipe(id, changes);
 
     if (!updated) {
       throw recipeNotFound(id);
@@ -150,6 +145,71 @@ export class RecipesService {
     }
 
     return updated;
+  }
+
+  @OnEvent(INGREDIENT_RENAMED_EVENT, { suppressErrors: false })
+  async handleIngredientRenamed(event: IngredientRenamedEvent): Promise<void> {
+    await this.recipeRepository.renameIngredientInRecipes(
+      event.ingredientId,
+      event.name,
+    );
+  }
+
+  /** Links every ingredient usage to the registry and takes the registry's name as display copy. */
+  private async linkIngredients(
+    sections: RecipeSection[],
+  ): Promise<RecipeSection[]> {
+    const linkedSections: RecipeSection[] = [];
+
+    for (const section of sections) {
+      linkedSections.push({
+        ...section,
+        steps: await this.linkStepIngredients(section.steps),
+      });
+    }
+
+    return linkedSections;
+  }
+
+  private async linkStepIngredients(
+    steps: RecipeStep[],
+  ): Promise<RecipeStep[]> {
+    const linkedSteps: RecipeStep[] = [];
+
+    for (const step of steps) {
+      linkedSteps.push({
+        ...step,
+        ingredients: await this.linkUsages(step.ingredients),
+      });
+    }
+
+    return linkedSteps;
+  }
+
+  // One after another, so two usages of a new ingredient do not both try to create it.
+  private async linkUsages(
+    usages: IngredientUsage[],
+  ): Promise<IngredientUsage[]> {
+    const linkedUsages: IngredientUsage[] = [];
+
+    for (const usage of usages) {
+      const ingredient = await this.ingredientsService.resolveIngredient(usage);
+
+      if (isUnit(usage.unit)) {
+        await this.ingredientsService.rememberLastUnit(
+          ingredient.id,
+          usage.unit,
+        );
+      }
+
+      linkedUsages.push({
+        ...usage,
+        ingredientId: ingredient.id,
+        ingredient: ingredient.name,
+      });
+    }
+
+    return linkedUsages;
   }
 
   async getRecipesByCategory(

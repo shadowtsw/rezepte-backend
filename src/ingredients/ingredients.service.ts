@@ -14,13 +14,39 @@ import { normalizeIngredientName } from "./ingredient.utils";
 import { UpdateIngredientDto } from "./dto/update-ingredient.dto";
 import { apiError } from "src/common/api/api-response";
 import { MESSAGE_ID } from "src/messages/message-ids";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import {
+  INGREDIENT_RENAMED_EVENT,
+  IngredientRenamedEvent,
+} from "./events/ingredient-renamed.event";
 
 @Injectable()
 export class IngredientsService {
   constructor(
     @Inject(INGREDIENT_REPOSITORY)
     private readonly ingredientRepository: IngredientRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  /**
+   * The registry entry for an ingredient usage: by `ingredientId`, or by name for clients that
+   * do not send the id yet (D1b, step 1). Throws INGREDIENT_NOT_FOUND for an unknown id.
+   */
+  async resolveIngredient(usage: {
+    ingredientId?: string;
+    ingredient: string;
+  }): Promise<Ingredient> {
+    if (usage.ingredientId) {
+      return this.getIngredientById(usage.ingredientId);
+    }
+
+    return this.findOrCreateIngredient(usage.ingredient);
+  }
+
+  /** Remembers the unit last used with an ingredient, so the editor can preselect it. */
+  async rememberLastUnit(id: string, unit: string): Promise<void> {
+    await this.ingredientRepository.setLastUnit(id, unit);
+  }
 
   async getAllIngredients(search?: string): Promise<Ingredient[]> {
     return this.ingredientRepository.getAllIngredients(search);
@@ -105,6 +131,11 @@ export class IngredientsService {
       if (!updatedIngredient) {
         throw ingredientNotFound(id);
       }
+
+      await this.eventEmitter.emitAsync(
+        INGREDIENT_RENAMED_EVENT,
+        new IngredientRenamedEvent(id, updatedIngredient.name),
+      );
 
       return updatedIngredient;
     } catch (error) {

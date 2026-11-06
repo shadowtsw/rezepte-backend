@@ -17,4 +17,6 @@ export interface RecipeRepository {
     categoryId: string,
   ): Promise<Pick<Recipe, "id" | "title">[]>;
   removeCategoryFromRecipes(categoryId: string): Promise<void>;
+  /** Updates the display copy of an ingredient's name in every usage of every recipe. */
+  renameIngredientInRecipes(ingredientId: string, name: string): Promise<void>;
 }
