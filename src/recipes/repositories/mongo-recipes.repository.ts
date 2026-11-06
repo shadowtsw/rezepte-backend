@@ -135,6 +135,17 @@ export class MongoRecipesRepository implements RecipeRepository {
       .toArray();
   }
 
+  async countRecipesByCategory(): Promise<Record<string, number>> {
+    const groups = await this.collection
+      .aggregate<{ _id: string; count: number }>([
+        { $unwind: "$categories" },
+        { $group: { _id: "$categories.id", count: { $sum: 1 } } },
+      ])
+      .toArray();
+
+    return Object.fromEntries(groups.map((group) => [group._id, group.count]));
+  }
+
   async removeCategoryFromRecipes(categoryId: string): Promise<void> {
     await this.collection.updateMany(
       { "categories.id": categoryId },

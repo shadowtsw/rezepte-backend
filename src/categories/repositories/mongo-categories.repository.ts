@@ -55,6 +55,18 @@ export class MongoCategoriesRepository implements CategoryRepository {
     return updatedDocument ?? undefined;
   }
 
+  async updatePositions(ids: string[]): Promise<void> {
+    if (!ids.length) {
+      return;
+    }
+
+    await this.collection.bulkWrite(
+      ids.map((id, position) => ({
+        updateOne: { filter: { id }, update: { $set: { position } } },
+      })),
+    );
+  }
+
   async deleteCategory(id: string): Promise<boolean> {
     const result = await this.collection.deleteOne({ id });
 

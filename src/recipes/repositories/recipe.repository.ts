@@ -17,6 +17,8 @@ export interface RecipeRepository {
     categoryId: string,
   ): Promise<Pick<Recipe, "id" | "title">[]>;
   removeCategoryFromRecipes(categoryId: string): Promise<void>;
+  /** Number of recipes per category id, all statuses. Categories without recipes are missing. */
+  countRecipesByCategory(): Promise<Record<string, number>>;
   /** Updates the display copy of an ingredient's name in every usage of every recipe. */
   renameIngredientInRecipes(ingredientId: string, name: string): Promise<void>;
 }

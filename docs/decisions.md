@@ -14,3 +14,4 @@
 | 2026-11-05 | Message-response concept: `{ message, error, data }`, `message` is a catalog ID | uniform responses, translatable and machine-readable errors; see guidelines `general/api-design.md` |
 | 2026-11-05 | Action endpoints answer `200`, deletes `200` with `data: null` | native status semantics; `204` cannot carry the envelope |
 | 2026-11-06 | Open recipe to-dos block publishing in the service, not only in the editor | the block holds for every client (second device, API calls) |
+| 2026-11-06 | Unique category names are checked in the service, not by a unique index | existing documents would need a backfilled normalized field first; with two users a race is not a real risk |

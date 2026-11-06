@@ -44,6 +44,8 @@ export const MESSAGE_ID = {
   categoryCreated: "CATEGORY_CREATED",
   categoryUpdated: "CATEGORY_UPDATED",
   categoryDeleted: "CATEGORY_DELETED",
+  categoryNameTaken: "CATEGORY_NAME_TAKEN",
+  categoryOrderSaved: "CATEGORY_ORDER_SAVED",
 
   // Ingredients
   ingredientNotFound: "INGREDIENT_NOT_FOUND",

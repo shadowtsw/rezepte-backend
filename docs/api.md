@@ -83,12 +83,17 @@ Parser: `src/imports/parse-ingredient-line.ts` and `parse-recipe-text.ts` (stand
 
 | Method | Path | Notes |
 | --- | --- | --- |
-| GET | `/categories` | |
+| GET | `/categories` | sorted by `position`, each with `recipeCount` (all statuses) |
 | GET | `/categories/:id` | |
-| POST | `/categories` | `id` optional, generated if missing; duplicate → 409 |
-| PUT | `/categories/:id` | |
+| POST | `/categories` | `id` optional, generated if missing; goes to the end; duplicate id → 409 |
+| PUT | `/categories/order` | body `{ ids }` in the new order; unknown ids are ignored, missing ones follow in their old order; returns the list |
+| PUT | `/categories/:id` | rename |
 | DELETE | `/categories/:id` | also removes the category from all recipes (`$pull`) |
 | GET | `/categories/:id/recipes` | returns only `id` and `title` |
+
+Names are trimmed, 1–60 characters and unique ignoring case: `409 CATEGORY_NAME_TAKEN { name }` names the existing
+category. Categories saved before sorting existed have no `position`; they sort after the others by name, and the
+first create saves their current order.
 
 ## Ingredients
 

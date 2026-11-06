@@ -8,8 +8,9 @@ import {
   Put,
 } from "@nestjs/common";
 import { CategoriesService } from "./categories.service";
-import { RecipeCategory } from "./category.model";
+import { CategoryWithCount, RecipeCategory } from "./category.model";
 import { CreateCategoryDto } from "./dto/create-category.dto";
+import { UpdateCategoryOrderDto } from "./dto/update-category-order.dto";
 import { ResponseMessage } from "src/common/api/response-message.decorator";
 import { MESSAGE_ID } from "src/messages/message-ids";
 
@@ -18,7 +19,7 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Get()
-  getAllCategories(): Promise<RecipeCategory[]> {
+  getAllCategories(): Promise<CategoryWithCount[]> {
     return this.categoriesService.getAllCategories();
   }
 
@@ -31,6 +32,13 @@ export class CategoriesController {
   @ResponseMessage(MESSAGE_ID.categoryCreated)
   async createCategory(@Body() category: CreateCategoryDto) {
     return this.categoriesService.createCategory(category);
+  }
+
+  // Before ":id", otherwise "order" would be taken as a category id.
+  @Put("order")
+  @ResponseMessage(MESSAGE_ID.categoryOrderSaved)
+  async updateOrder(@Body() dto: UpdateCategoryOrderDto) {
+    return this.categoriesService.updateOrder(dto.ids);
   }
 
   @Put(":id")

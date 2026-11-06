@@ -263,6 +263,10 @@ export class RecipesService {
     return this.recipeRepository.getRecipesByCategory(categoryId);
   }
 
+  countRecipesByCategory(): Promise<Record<string, number>> {
+    return this.recipeRepository.countRecipesByCategory();
+  }
+
   async removeCategoryFromRecipes(categoryId: string): Promise<void> {
     await this.recipeRepository.removeCategoryFromRecipes(categoryId);
   }

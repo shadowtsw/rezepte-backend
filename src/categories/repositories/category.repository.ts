@@ -9,4 +9,6 @@ export interface CategoryRepository {
     category: RecipeCategory,
   ): Promise<RecipeCategory | undefined>;
   deleteCategory(id: string): Promise<boolean>;
+  /** Sets `position` to the index in `ids`. */
+  updatePositions(ids: string[]): Promise<void>;
 }

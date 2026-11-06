@@ -40,6 +40,8 @@ export const CATALOG_DE: Catalog = {
   CATEGORY_CREATED: "Kategorie angelegt.",
   CATEGORY_UPDATED: "Kategorie gespeichert.",
   CATEGORY_DELETED: "Kategorie gelöscht.",
+  CATEGORY_NAME_TAKEN: "Die Kategorie „{name}“ gibt es schon.",
+  CATEGORY_ORDER_SAVED: "Reihenfolge gespeichert.",
 
   INGREDIENT_NOT_FOUND: "Zutat {id} wurde nicht gefunden.",
   INGREDIENT_ALREADY_EXISTS: "Die Zutat „{name}“ existiert bereits.",

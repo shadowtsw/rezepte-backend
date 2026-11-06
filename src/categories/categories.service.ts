@@ -4,7 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { RecipeCategory } from "./category.model";
+import { CategoryWithCount, RecipeCategory } from "./category.model";
+import {
+  findNameConflict,
+  nextPosition,
+  orderedIds,
+  sortCategories,
+} from "./category-order";
 import { CATEGORY_REPOSITORY } from "./category.constants";
 import type { CategoryRepository } from "./repositories/category.repository";
 import { RecipesService } from "src/recipes/recipes.service";
@@ -23,8 +29,26 @@ export class CategoriesService {
     private readonly recipesService: RecipesService,
   ) {}
 
-  getAllCategories(): Promise<RecipeCategory[]> {
-    return this.categoryRepository.getAllCategories();
+  /** Sorted by position, each with its number of recipes. */
+  async getAllCategories(): Promise<CategoryWithCount[]> {
+    const [categories, counts] = await Promise.all([
+      this.categoryRepository.getAllCategories(),
+      this.recipesService.countRecipesByCategory(),
+    ]);
+
+    return sortCategories(categories).map((category) => ({
+      ...category,
+      recipeCount: counts[category.id] ?? 0,
+    }));
+  }
+
+  /** Saves a new order; categories not in `ids` keep their order after them. */
+  async updateOrder(ids: string[]): Promise<CategoryWithCount[]> {
+    const categories = await this.categoryRepository.getAllCategories();
+
+    await this.categoryRepository.updatePositions(orderedIds(categories, ids));
+
+    return this.getAllCategories();
   }
 
   async getCategoryById(id: string): Promise<RecipeCategory> {
@@ -38,9 +62,14 @@ export class CategoriesService {
   }
 
   async createCategory(category: CreateCategoryDto): Promise<RecipeCategory> {
+    const existing = await this.categoryRepository.getAllCategories();
+
+    throwOnNameConflict(existing, category.name);
+
     const newCategory: RecipeCategory = {
       ...category,
       id: category.id ?? randomUUID(),
+      position: await this.positionAtEnd(existing),
     };
 
     try {
@@ -56,10 +85,30 @@ export class CategoriesService {
     return newCategory;
   }
 
+  /**
+   * Position after all others. Categories saved before sorting existed have none and would sort after the new
+   * one, so their current order is saved first.
+   */
+  private async positionAtEnd(categories: RecipeCategory[]): Promise<number> {
+    if (categories.every((category) => category.position !== undefined)) {
+      return nextPosition(categories);
+    }
+
+    await this.categoryRepository.updatePositions(orderedIds(categories, []));
+
+    return categories.length;
+  }
+
   async updateCategory(
     id: string,
     category: RecipeCategory,
   ): Promise<RecipeCategory> {
+    throwOnNameConflict(
+      await this.categoryRepository.getAllCategories(),
+      category.name,
+      id,
+    );
+
     const updatedCategory = await this.categoryRepository.updateCategory(
       id,
       category,
@@ -98,6 +147,22 @@ export class CategoriesService {
     await this.recipesService.removeCategoryFromRecipes(id);
 
     await this.categoryRepository.deleteCategory(id);
+  }
+}
+
+function throwOnNameConflict(
+  categories: RecipeCategory[],
+  name: string,
+  ownId?: string,
+): void {
+  const conflict = findNameConflict(categories, name, ownId);
+
+  if (conflict) {
+    throw new ConflictException(
+      apiError(MESSAGE_ID.categoryNameTaken, {
+        params: { name: conflict.name },
+      }),
+    );
   }
 }
 
