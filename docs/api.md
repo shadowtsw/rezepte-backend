@@ -70,6 +70,13 @@ Same ingredient and kind of unit are summed, converting g/kg, ml/l, TL/EL (`src/
 | POST | `/imports/parse` | body `{ text }` (max. 20 000 characters); returns a preview, **saves nothing** (`200`) |
 
 Preview: `{ title, servings, source, lines }`. Each line: `{ original, skipped, amount, unit, name, note, issues, match }`.
+
+`POST /imports/link` with `{ url }` returns the same preview from a recipe page: the backend loads the page and reads
+the schema.org `Recipe` JSON-LD (`name`, `recipeYield`, `recipeIngredient`); `source` is the link. Only public
+http(s) addresses are loaded (`src/imports/safe-fetch.ts`): no local names (localhost, single labels, `.home.arpa`,
+`.local`, ...), no private, loopback or link-local addresses, checked in the DNS lookup of every request and after
+every redirect (max 3), at most 3 MB and 8 s. Errors: `400 IMPORT_LINK_INVALID` / `IMPORT_LINK_BLOCKED`,
+`502 IMPORT_LINK_UNREACHABLE` / `IMPORT_LINK_TOO_LARGE`, `422 IMPORT_NO_RECIPE`.
 - `skipped`: headings like "Für den Teig:".
 - `issues`: why the line should be checked, as message IDs with params (`IMPORT_RANGE {from,to}`,
   `IMPORT_UNKNOWN_UNIT {unit}`, `IMPORT_MARKED_UNSURE`, `IMPORT_SEVERAL_INGREDIENTS`, `IMPORT_NAME_MISSING`,

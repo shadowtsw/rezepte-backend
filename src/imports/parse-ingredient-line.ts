@@ -229,10 +229,14 @@ function emptyLine(original: string): ParsedIngredientLine {
   };
 }
 
+/** Plural endings in brackets right after a word, as Chefkoch writes them: "Zwiebel(n)", "Kürbis(se)". */
+const PLURAL_MARKER = /(\p{L})\((?:n|en|e|s|se|er|ern|nen)\)/gu;
+
 export function parseIngredientLine(raw: string): ParsedIngredientLine {
   const original = raw.trim();
   const line = emptyLine(original);
-  let text = original;
+  // The singular is the registry name, so "Zwiebel(n)" becomes "Zwiebel".
+  let text = original.replace(PLURAL_MARKER, "$1");
 
   if (text.startsWith(UNSURE_MARKER)) {
     line.issues.push({ message: MESSAGE_ID.importMarkedUnsure });

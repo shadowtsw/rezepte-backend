@@ -77,4 +77,13 @@ export const CATALOG_DE: Catalog = {
   IMPORT_NAME_MISSING: "Keine Zutat erkannt.",
   IMPORT_SIMILAR_INGREDIENT: "Ähnliche Zutat gefunden: „{name}“.",
   IMPORT_NEW_INGREDIENT: "Neue Zutat, wird angelegt.",
+  IMPORT_LINK_INVALID:
+    "Bitte einen Link angeben, der mit http:// oder https:// beginnt.",
+  IMPORT_LINK_BLOCKED:
+    "Adressen im Heimnetz werden aus Sicherheitsgründen nicht geladen. Nur öffentliche Seiten gehen.",
+  IMPORT_LINK_UNREACHABLE:
+    "Die Seite konnte nicht geladen werden. Stimmt der Link, und ist die Seite erreichbar?",
+  IMPORT_LINK_TOO_LARGE: "Die Seite ist zu groß zum Einlesen.",
+  IMPORT_NO_RECIPE:
+    "Kein Rezept erkannt. Die Seite enthält keine Rezeptdaten. Kopiere die Zutaten und nutze den Reiter „Text“.",
 };

@@ -76,6 +76,11 @@ export const MESSAGE_ID = {
   importNameMissing: "IMPORT_NAME_MISSING",
   importSimilarIngredient: "IMPORT_SIMILAR_INGREDIENT",
   importNewIngredient: "IMPORT_NEW_INGREDIENT",
+  importLinkInvalid: "IMPORT_LINK_INVALID",
+  importLinkBlocked: "IMPORT_LINK_BLOCKED",
+  importLinkUnreachable: "IMPORT_LINK_UNREACHABLE",
+  importLinkTooLarge: "IMPORT_LINK_TOO_LARGE",
+  importNoRecipe: "IMPORT_NO_RECIPE",
 } as const;
 
 export type MessageId = (typeof MESSAGE_ID)[keyof typeof MESSAGE_ID];

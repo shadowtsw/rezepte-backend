@@ -131,3 +131,21 @@ describe("parseIngredientLine", () => {
     });
   });
 });
+
+describe("plural markers", () => {
+  it("drops Chefkoch plural endings in brackets, keeps real notes", () => {
+    expect(parseIngredientLine("1 Zwiebel(n)")).toMatchObject({
+      original: "1 Zwiebel(n)",
+      amount: 1,
+      name: "Zwiebel",
+      note: null,
+    });
+    expect(
+      parseIngredientLine("1 Butternusskürbis(se) (750 - 1000 g)"),
+    ).toMatchObject({ name: "Butternusskürbis", note: "750 - 1000 g" });
+    expect(parseIngredientLine("2 Ei(er) (Größe M)")).toMatchObject({
+      name: "Ei",
+      note: "Größe M",
+    });
+  });
+});
