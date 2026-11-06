@@ -9,6 +9,7 @@ import { COLLECTION_REPOSITORY } from "./collection.constants";
 import type {
   CollectionItem,
   CollectionRecipeItem,
+  CollectionRecipeReference,
   RecipeCollection,
 } from "./collection.model";
 import type { CollectionRepository } from "./repositories/collection.repository";
@@ -17,6 +18,12 @@ import { UpdateCollectionDto } from "./dto/update-collection.dto";
 import { RecipesService } from "src/recipes/recipes.service";
 import { AddRecipeToCollectionDto } from "./dto/add-recipe-to-collection.dto";
 import { UpdateCollectionItemsDto } from "./dto/update-collection-items.dto";
+import type { Recipe } from "src/recipes/recipe.model";
+import {
+  type IngredientContribution,
+  type IngredientSummaryLine,
+  summarizeIngredients,
+} from "src/recipes/ingredient-summary";
 import { apiError } from "src/common/api/api-response";
 import { MESSAGE_ID, type MessageId } from "src/messages/message-ids";
 import { OnEvent } from "@nestjs/event-emitter";
@@ -45,6 +52,44 @@ export class CollectionsService {
     }
 
     return collection;
+  }
+
+  /**
+   * Summed ingredients of the whole collection or of one group, scaled to each entry's servings.
+   * Every entry counts, so a recipe that appears twice contributes twice.
+   */
+  async getIngredientSummary(
+    id: string,
+    groupId?: string,
+  ): Promise<IngredientSummaryLine[]> {
+    const collection = await this.getCollectionById(id);
+    const entries = entriesOf(collection, groupId);
+    const recipes = await this.loadRecipes(
+      entries.map((entry) => entry.recipeId),
+    );
+
+    const contributions = entries.flatMap((entry) => {
+      const recipe = recipes.get(entry.recipeId);
+
+      return recipe ? contributionsOf(recipe, entry.servings) : [];
+    });
+
+    return summarizeIngredients(contributions);
+  }
+
+  /** Each recipe once, even if it appears several times. Recipes that no longer exist are skipped. */
+  private async loadRecipes(recipeIds: string[]): Promise<Map<string, Recipe>> {
+    const recipes = new Map<string, Recipe>();
+
+    for (const recipeId of new Set(recipeIds)) {
+      const recipe = await this.recipesService.findRecipe(recipeId);
+
+      if (recipe) {
+        recipes.set(recipeId, recipe);
+      }
+    }
+
+    return recipes;
   }
 
   async createCollection(dto: CreateCollectionDto): Promise<RecipeCollection> {
@@ -270,6 +315,53 @@ export class CollectionsService {
  */
 function servingsField(servings: number | undefined): { servings?: number } {
   return servings === undefined ? {} : { servings };
+}
+
+type CollectionEntry = CollectionRecipeItem | CollectionRecipeReference;
+
+function entriesOf(
+  collection: RecipeCollection,
+  groupId: string | undefined,
+): CollectionEntry[] {
+  if (!groupId) {
+    return collection.items.flatMap((item) =>
+      item.type === "recipe" ? [item] : item.recipes,
+    );
+  }
+
+  const group = collection.items.find(
+    (item) => item.type === "group" && item.id === groupId,
+  );
+
+  if (group?.type !== "group") {
+    throw new NotFoundException(
+      apiError(MESSAGE_ID.collectionGroupNotFound, { params: { groupId } }),
+    );
+  }
+
+  return group.recipes;
+}
+
+/** The recipe's usages, scaled from the recipe's servings to the entry's servings. */
+function contributionsOf(
+  recipe: Recipe,
+  entryServings: number | undefined,
+): IngredientContribution[] {
+  const servings = entryServings ?? recipe.servings;
+  const factor = recipe.servings ? servings / recipe.servings : 1;
+
+  return recipe.sections.flatMap((section) =>
+    section.steps.flatMap((step) =>
+      step.ingredients.map((usage) => ({
+        ingredientId: usage.ingredientId,
+        name: usage.ingredient,
+        amount: usage.amount ?? undefined,
+        unit: usage.unit || undefined,
+        factor,
+        origin: { recipeId: recipe.id, servings },
+      })),
+    ),
+  );
 }
 
 function collectionNotFound(id: string): NotFoundException {

@@ -67,6 +67,11 @@ export class RecipesService {
     return recipe;
   }
 
+  /** Like getRecipeById, but returns undefined instead of throwing for a missing recipe. */
+  async findRecipe(id: string): Promise<Recipe | undefined> {
+    return this.recipeRepository.findById(id);
+  }
+
   async createRecipe(recipe: CreateRecipeDto): Promise<Recipe> {
     const newRecipe: Recipe = {
       ...recipe,

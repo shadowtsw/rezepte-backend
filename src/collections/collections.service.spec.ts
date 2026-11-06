@@ -63,7 +63,7 @@ function buildCollection(
 
 describe("CollectionsService", () => {
   let collectionRepository: jest.Mocked<CollectionRepository>;
-  let recipesService: { getRecipeById: jest.Mock };
+  let recipesService: { getRecipeById: jest.Mock; findRecipe?: jest.Mock };
   let service: CollectionsService;
 
   beforeEach(() => {
@@ -120,6 +120,103 @@ describe("CollectionsService", () => {
       await expect(service.deleteCollection("missing")).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+  });
+
+  describe("getIngredientSummary", () => {
+    const EGGS_ID = "eggs-id";
+    const pancakes: Recipe = {
+      ...buildRecipe("pancakes", "published"),
+      servings: 4,
+      sections: [
+        {
+          id: "s",
+          title: "",
+          steps: [
+            {
+              id: "t",
+              title: "",
+              instruction: "",
+              ingredients: [
+                {
+                  id: "u1",
+                  ingredientId: EGGS_ID,
+                  ingredient: "Eier",
+                  amount: 3,
+                },
+                {
+                  id: "u2",
+                  ingredientId: "flour-id",
+                  ingredient: "Mehl",
+                  amount: 250,
+                  unit: "g",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      recipesService.findRecipe = jest.fn((id: string) =>
+        Promise.resolve(id === "pancakes" ? pancakes : undefined),
+      );
+      collectionRepository.findById.mockResolvedValue(
+        buildCollection({
+          items: [
+            { id: "single", type: "recipe", recipeId: "pancakes", servings: 8 },
+            {
+              id: "group",
+              type: "group",
+              name: "Frühstück",
+              recipes: [
+                { id: "in-group", recipeId: "pancakes" },
+                { id: "deleted", recipeId: "gone" },
+              ],
+            },
+          ],
+        }),
+      );
+    });
+
+    it("sums the whole collection, scaled to each entry's servings", async () => {
+      const lines = await service.getIngredientSummary(COLLECTION_ID);
+      const eggs = lines.find((line) => line.name === "Eier");
+
+      // 3 eggs for 4 servings: 6 for the entry with 8 servings, 3 for the one without own servings.
+      expect(eggs).toMatchObject({ amount: 9, unit: null });
+      expect(eggs?.parts.map((part) => part.origin)).toEqual([
+        { recipeId: "pancakes", servings: 8 },
+        { recipeId: "pancakes", servings: 4 },
+      ]);
+      expect(lines.find((line) => line.name === "Mehl")).toMatchObject({
+        amount: 750,
+        unit: "g",
+      });
+    });
+
+    it("loads each recipe once and skips recipes that no longer exist", async () => {
+      await service.getIngredientSummary(COLLECTION_ID);
+
+      expect(recipesService.findRecipe).toHaveBeenCalledTimes(2);
+    });
+
+    it("sums only one group", async () => {
+      const lines = await service.getIngredientSummary(COLLECTION_ID, "group");
+
+      expect(lines.find((line) => line.name === "Eier")).toMatchObject({
+        amount: 3,
+      });
+    });
+
+    it("throws COLLECTION_GROUP_NOT_FOUND for an unknown group", async () => {
+      await expect(
+        errorPayloadOf(service.getIngredientSummary(COLLECTION_ID, "missing")),
+      ).resolves.toEqual({
+        message: "COLLECTION_GROUP_NOT_FOUND",
+        params: { groupId: "missing" },
+      });
     });
   });
 

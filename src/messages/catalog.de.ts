@@ -44,6 +44,8 @@ export const CATALOG_DE: Catalog = {
   INGREDIENT_DELETED: "Zutat gelöscht.",
 
   COLLECTION_NOT_FOUND: "Sammlung {id} wurde nicht gefunden.",
+  COLLECTION_GROUP_NOT_FOUND:
+    "Die Gruppe {groupId} gibt es in dieser Sammlung nicht.",
   COLLECTION_VERSION_CONFLICT:
     "Die Sammlung wurde inzwischen geändert. Bitte neu laden und erneut versuchen.",
   COLLECTION_RECIPE_NOT_PUBLISHED:

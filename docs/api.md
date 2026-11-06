@@ -56,7 +56,7 @@ Unknown properties in request bodies are stripped. `id`, `status` and `version` 
 ```
 
 Same ingredient and kind of unit are summed, converting g/kg, ml/l, TL/EL (`src/recipes/ingredient-summary.ts`).
-`amount: null` means "nach Bedarf". Collections will use the same function.
+`amount: null` means "nach Bedarf". `GET /collections/:id/ingredients` uses the same function.
 
 ## Categories
 
@@ -88,6 +88,7 @@ Same ingredient and kind of unit are summed, converting g/kg, ml/l, TL/EL (`src/
 | DELETE | `/collections/:id` | |
 | POST | `/collections/:id/recipes` | body `{ recipeId }`; only published recipes; appends a new item |
 | PUT | `/collections/:id/items` | body `{ version, items }`; replaces the whole structure |
+| GET | `/collections/:id/ingredients` | summed ingredients, scaled to each entry's servings; optional `?groupId=` (unknown group: `COLLECTION_GROUP_NOT_FOUND`); parts have `origin: { recipeId, servings }` |
 
 ### `PUT /collections/:id/items`
 

@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
 } from "@nestjs/common";
 import { CollectionsService } from "./collections.service";
 import { CreateCollectionDto } from "./dto/create-collection.dto";
@@ -17,6 +18,7 @@ import { AddRecipeToCollectionDto } from "./dto/add-recipe-to-collection.dto";
 import { UpdateCollectionItemsDto } from "./dto/update-collection-items.dto";
 import { ResponseMessage } from "src/common/api/response-message.decorator";
 import { MESSAGE_ID } from "src/messages/message-ids";
+import type { IngredientSummaryLine } from "src/recipes/ingredient-summary";
 
 @Controller("collections")
 export class CollectionsController {
@@ -25,6 +27,14 @@ export class CollectionsController {
   @Get()
   getAllCollections() {
     return this.collectionsService.getAllCollections();
+  }
+
+  @Get(":id/ingredients")
+  getIngredientSummary(
+    @Param("id") id: string,
+    @Query("groupId") groupId?: string,
+  ): Promise<IngredientSummaryLine[]> {
+    return this.collectionsService.getIngredientSummary(id, groupId);
   }
 
   @Get(":id")

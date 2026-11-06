@@ -51,6 +51,7 @@ export const MESSAGE_ID = {
 
   // Collections
   collectionNotFound: "COLLECTION_NOT_FOUND",
+  collectionGroupNotFound: "COLLECTION_GROUP_NOT_FOUND",
   collectionVersionConflict: "COLLECTION_VERSION_CONFLICT",
   collectionRecipeNotPublished: "COLLECTION_RECIPE_NOT_PUBLISHED",
   collectionItemIdsNotUnique: "COLLECTION_ITEM_IDS_NOT_UNIQUE",
