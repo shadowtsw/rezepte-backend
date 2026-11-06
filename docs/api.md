@@ -37,9 +37,14 @@ Unknown properties in request bodies are stripped. `id`, `status` and `version` 
 | PATCH | `/recipes/:id` | partial update, never changes `status` |
 | PUT | `/recipes/:id` | identical to PATCH by design (partial update) |
 | DELETE | `/recipes/:id` | |
-| POST | `/recipes/:id/publish` | status → `published` |
+| POST | `/recipes/:id/publish` | status → `published`; `409 RECIPE_OPEN_TODOS` `{ count }` while to-dos are open |
 | POST | `/recipes/:id/archive` | status → `archived` |
 | POST | `/recipes/:id/draft` | status → `draft` |
+
+### To-dos
+
+`todos?: { id, text, done }[]` (max 50, text max 200): the list "Was fehlt noch?" of a recipe. Saved with the recipe
+(PATCH/PUT). Unchecked to-dos block `POST /recipes/:id/publish`; published recipes may still have to-dos.
 
 ### Ingredient usages
 

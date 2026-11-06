@@ -30,6 +30,8 @@ export const CATALOG_DE: Catalog = {
   RECIPE_UPDATED: "Rezept gespeichert.",
   RECIPE_DELETED: "Rezept gelöscht.",
   RECIPE_PUBLISHED: "Rezept veröffentlicht.",
+  RECIPE_OPEN_TODOS:
+    "Das Rezept hat noch {count} offene ToDos. Erst abhaken oder entfernen, dann veröffentlichen.",
   RECIPE_ARCHIVED: "Rezept archiviert.",
   RECIPE_SET_TO_DRAFT: "Rezept ist wieder ein Entwurf.",
 

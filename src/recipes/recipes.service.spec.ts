@@ -58,6 +58,8 @@ describe("RecipesService", () => {
   let service: RecipesService;
   let recipeRepository: {
     deleteRecipe: jest.Mock;
+    findById: jest.Mock;
+    publishRecipe: jest.Mock;
     saveRecipe: jest.Mock;
     renameIngredientInRecipes: jest.Mock;
   };
@@ -70,6 +72,8 @@ describe("RecipesService", () => {
   beforeEach(async () => {
     recipeRepository = {
       deleteRecipe: jest.fn(),
+      findById: jest.fn(),
+      publishRecipe: jest.fn((id: string) => Promise.resolve({ id })),
       saveRecipe: jest.fn((recipe: Recipe) => Promise.resolve(recipe)),
       renameIngredientInRecipes: jest.fn(),
     };
@@ -127,6 +131,37 @@ describe("RecipesService", () => {
     expect(recipeRepository.renameIngredientInRecipes.mock.calls).toEqual([
       [LENTILS_ID, "Linsen, rot"],
     ]);
+  });
+
+  describe("publishRecipe", () => {
+    const draft = (todos: Recipe["todos"]) => ({ id: "r1", todos });
+
+    it("rejects while to-dos are open", async () => {
+      recipeRepository.findById.mockResolvedValue(
+        draft([
+          { id: "a", text: "Arbeitsschritte eintragen", done: false },
+          { id: "b", text: "Backzeit prüfen", done: true },
+        ]),
+      );
+
+      await expect(service.publishRecipe("r1")).rejects.toMatchObject({
+        status: 409,
+        response: { message: "RECIPE_OPEN_TODOS", params: { count: 1 } },
+      });
+      expect(recipeRepository.publishRecipe).not.toHaveBeenCalled();
+    });
+
+    it("publishes when all to-dos are done or there are none", async () => {
+      recipeRepository.findById.mockResolvedValueOnce(
+        draft([{ id: "b", text: "Backzeit prüfen", done: true }]),
+      );
+      recipeRepository.findById.mockResolvedValueOnce(draft(undefined));
+
+      await service.publishRecipe("r1");
+      await service.publishRecipe("r1");
+
+      expect(recipeRepository.publishRecipe).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe("deleteRecipe", () => {

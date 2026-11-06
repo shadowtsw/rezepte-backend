@@ -34,6 +34,7 @@ export const MESSAGE_ID = {
   recipeUpdated: "RECIPE_UPDATED",
   recipeDeleted: "RECIPE_DELETED",
   recipePublished: "RECIPE_PUBLISHED",
+  recipeOpenTodos: "RECIPE_OPEN_TODOS",
   recipeArchived: "RECIPE_ARCHIVED",
   recipeSetToDraft: "RECIPE_SET_TO_DRAFT",
 

@@ -127,7 +127,19 @@ export class RecipesService {
     return updated;
   }
 
+  /** Open to-dos block publishing; the editor disables the button, this guards other clients. */
   async publishRecipe(id: string): Promise<Recipe> {
+    const recipe = await this.getRecipeById(id);
+    const openTodos = (recipe.todos ?? []).filter((todo) => !todo.done);
+
+    if (openTodos.length > 0) {
+      throw new ConflictException(
+        apiError(MESSAGE_ID.recipeOpenTodos, {
+          params: { count: openTodos.length },
+        }),
+      );
+    }
+
     const updated = await this.recipeRepository.publishRecipe(id);
 
     if (!updated) {

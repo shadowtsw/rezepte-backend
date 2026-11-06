@@ -1,5 +1,7 @@
 import {
+  ArrayMaxSize,
   IsArray,
+  IsBoolean,
   IsIn,
   IsInt,
   IsNumber,
@@ -16,6 +18,8 @@ import { UNITS } from "../units";
 
 const MAX_NOTE_LENGTH = 200;
 const MAX_SOURCE_LENGTH = 500;
+const MAX_TODO_LENGTH = 200;
+const MAX_TODOS = 50;
 
 class IngredientUsageDto {
   @IsString()
@@ -79,6 +83,18 @@ class RecipeSectionDto {
   steps!: RecipeStepDto[];
 }
 
+class RecipeTodoDto {
+  @IsString()
+  id!: string;
+
+  @IsString()
+  @MaxLength(MAX_TODO_LENGTH)
+  text!: string;
+
+  @IsBoolean()
+  done!: boolean;
+}
+
 class RecipeCategoryReferenceDto {
   @IsString()
   id!: string;
@@ -117,4 +133,11 @@ export class CreateRecipeDto {
   @IsString()
   @MaxLength(MAX_SOURCE_LENGTH)
   source?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_TODOS)
+  @ValidateNested({ each: true })
+  @Type(() => RecipeTodoDto)
+  todos?: RecipeTodoDto[];
 }

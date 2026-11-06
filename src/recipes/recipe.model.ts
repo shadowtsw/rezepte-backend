@@ -7,6 +7,8 @@ export interface Recipe {
   notes?: string;
   /** Where the recipe comes from: a link, a file name or free text (e.g. "Kochbuch Oma, S. 12"). */
   source?: string;
+  /** "Was fehlt noch?": open to-dos block publishing (see guidelines projects/rezepte.md, D12). */
+  todos?: RecipeTodo[];
   status: RecipeStatus;
   version: number;
   categories: RecipeCategoryReference[];
@@ -36,6 +38,12 @@ export interface IngredientUsage {
   unit?: string;
   /** Preparation hint shown after the name, e.g. "gerieben". Does not split lines when summing. */
   note?: string;
+}
+
+export interface RecipeTodo {
+  id: string;
+  text: string;
+  done: boolean;
 }
 
 export interface RecipeCategoryReference {
