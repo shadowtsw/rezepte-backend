@@ -17,6 +17,7 @@ Services only know the interface in `repositories/<name>.repository.ts`.
 | `RecipesModule` | `src/recipes` | `recipes` | recipes with sections → steps → ingredient usages |
 | `CategoriesModule` | `src/categories` | `categories` | uses `RecipesService` to remove category references on delete |
 | `IngredientsModule` | `src/ingredients` | `ingredients` | ingredient registry with `lastUnit`; recipes link usages via `resolveIngredient` on save |
+| `ImportsModule` | `src/imports` | – | recipe import: parsers and `POST /imports/parse` (preview only) |
 | `MessagesModule` | `src/messages` | – | message IDs, text catalog per language, `GET /messages` |
 | `CollectionsModule` | `src/collections` | `recipe_collections` | ordered items (recipe or group); uses `RecipesService` to check status |
 

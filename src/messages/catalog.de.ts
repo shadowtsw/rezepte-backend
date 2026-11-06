@@ -63,4 +63,14 @@ export const CATALOG_DE: Catalog = {
   COLLECTION_DELETED: "Sammlung gelöscht.",
   COLLECTION_RECIPE_ADDED: "Rezept zur Sammlung hinzugefügt.",
   COLLECTION_ITEMS_UPDATED: "Sammlung gespeichert.",
+
+  IMPORT_MARKED_UNSURE: "Als unsicher markiert, z. B. von der KI.",
+  IMPORT_RANGE: "Bereich {from}–{to}: höherer Wert übernommen.",
+  IMPORT_UNKNOWN_UNIT:
+    "Die Einheit „{unit}“ gibt es nicht. Bitte umrechnen oder anpassen.",
+  IMPORT_SEVERAL_INGREDIENTS:
+    "Mehrere Zutaten in einer Zeile? Bitte aufteilen.",
+  IMPORT_NAME_MISSING: "Keine Zutat erkannt.",
+  IMPORT_SIMILAR_INGREDIENT: "Ähnliche Zutat gefunden: „{name}“.",
+  IMPORT_NEW_INGREDIENT: "Neue Zutat, wird angelegt.",
 };

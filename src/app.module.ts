@@ -9,6 +9,7 @@ import { CollectionsModule } from "./collections/collections.module";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { APP_FILTER, APP_INTERCEPTOR } from "@nestjs/core";
 import { MessagesModule } from "./messages/messages.module";
+import { ImportsModule } from "./imports/imports.module";
 import { ResponseEnvelopeInterceptor } from "./common/api/response-envelope.interceptor";
 import { ApiExceptionFilter } from "./common/api/api-exception.filter";
 
@@ -23,6 +24,7 @@ import { ApiExceptionFilter } from "./common/api/api-exception.filter";
     IngredientsModule,
     CollectionsModule,
     MessagesModule,
+    ImportsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -58,6 +58,22 @@ Unknown properties in request bodies are stripped. `id`, `status` and `version` 
 Same ingredient and kind of unit are summed, converting g/kg, ml/l, TL/EL (`src/recipes/ingredient-summary.ts`).
 `amount: null` means "nach Bedarf". `GET /collections/:id/ingredients` uses the same function.
 
+## Imports
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| POST | `/imports/parse` | body `{ text }` (max. 20 000 characters); returns a preview, **saves nothing** (`200`) |
+
+Preview: `{ title, servings, source, lines }`. Each line: `{ original, skipped, amount, unit, name, note, issues, match }`.
+- `skipped`: headings like "Für den Teig:".
+- `issues`: why the line should be checked, as message IDs with params (`IMPORT_RANGE {from,to}`,
+  `IMPORT_UNKNOWN_UNIT {unit}`, `IMPORT_MARKED_UNSURE`, `IMPORT_SEVERAL_INGREDIENTS`, `IMPORT_NAME_MISSING`,
+  `IMPORT_SIMILAR_INGREDIENT {name}`, `IMPORT_NEW_INGREDIENT`).
+- `match`: `{ kind: "exact" | "similar", ingredientId, name }` or `{ kind: "new" }`. Similar entries are only suggested.
+
+Parser: `src/imports/parse-ingredient-line.ts` and `parse-recipe-text.ts` (standard format with `Titel:`, `Portionen:`,
+`Quelle:`, `Zutaten:`, and free notes). Unit synonyms in `src/imports/unit-synonyms.ts`.
+
 ## Categories
 
 | Method | Path | Notes |

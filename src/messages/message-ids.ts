@@ -64,6 +64,15 @@ export const MESSAGE_ID = {
   collectionDeleted: "COLLECTION_DELETED",
   collectionRecipeAdded: "COLLECTION_RECIPE_ADDED",
   collectionItemsUpdated: "COLLECTION_ITEMS_UPDATED",
+
+  // Import (reasons why a preview line should be checked)
+  importMarkedUnsure: "IMPORT_MARKED_UNSURE",
+  importRange: "IMPORT_RANGE",
+  importUnknownUnit: "IMPORT_UNKNOWN_UNIT",
+  importSeveralIngredients: "IMPORT_SEVERAL_INGREDIENTS",
+  importNameMissing: "IMPORT_NAME_MISSING",
+  importSimilarIngredient: "IMPORT_SIMILAR_INGREDIENT",
+  importNewIngredient: "IMPORT_NEW_INGREDIENT",
 } as const;
 
 export type MessageId = (typeof MESSAGE_ID)[keyof typeof MESSAGE_ID];
