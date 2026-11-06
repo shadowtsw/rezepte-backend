@@ -20,6 +20,8 @@ export const CATALOG_DE: Catalog = {
   IS_UUID: "Muss eine gültige ID sein.",
   MIN: "Wert ist zu klein.",
   MIN_LENGTH: "Text ist zu kurz.",
+  MAX_LENGTH: "Text ist zu lang.",
+  IS_IN: "Dieser Wert ist nicht erlaubt.",
   NESTED_VALIDATION: "Ungültiger Aufbau.",
 
   RECIPE_NOT_FOUND: "Rezept {id} wurde nicht gefunden.",

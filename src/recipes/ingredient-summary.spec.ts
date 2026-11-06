@@ -216,4 +216,21 @@ describe("summarizeIngredients", () => {
     expect(lines).toHaveLength(1);
     expect(lines[0]).toMatchObject({ amount: 2 });
   });
+
+  it("sums 'Stück' and no unit on one line", () => {
+    const eggs = line(
+      [
+        part({ ingredientId: "eggs", name: "Eier", amount: 2 }),
+        part({ ingredientId: "eggs", name: "Eier", amount: 3, unit: "Stück" }),
+      ],
+      "Eier",
+    );
+    const onlyWithoutUnit = line(
+      [part({ ingredientId: "eggs", name: "Eier", amount: 2 })],
+      "Eier",
+    );
+
+    expect(eggs).toMatchObject({ amount: 5, unit: "Stück" });
+    expect(onlyWithoutUnit).toMatchObject({ amount: 2, unit: null });
+  });
 });

@@ -5,6 +5,8 @@ export interface Recipe {
   tags: string[];
   sections: RecipeSection[];
   notes?: string;
+  /** Where the recipe comes from: a link, a file name or free text (e.g. "Kochbuch Oma, S. 12"). */
+  source?: string;
   status: RecipeStatus;
   version: number;
   categories: RecipeCategoryReference[];
@@ -32,6 +34,8 @@ export interface IngredientUsage {
   ingredient: string;
   amount?: number;
   unit?: string;
+  /** Preparation hint shown after the name, e.g. "gerieben". Does not split lines when summing. */
+  note?: string;
 }
 
 export interface RecipeCategoryReference {

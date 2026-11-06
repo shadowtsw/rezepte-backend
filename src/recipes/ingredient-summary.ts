@@ -63,13 +63,21 @@ interface Accumulator {
   parts: SummaryPart[];
 }
 
+const PIECE = "Stück";
+
+/** "2 Eier" (no unit) and "3 Stück Eier" are the same kind, so they end up on one line. */
+function countedUnitOf(unit: string | undefined): string {
+  return unit === PIECE ? "" : (unit ?? "");
+}
+
 function kindOf(contribution: IngredientContribution): LineKind {
   if (contribution.amount === undefined) {
     return FREE;
   }
 
   return (
-    conversionOf(contribution.unit)?.kind ?? `unit:${contribution.unit ?? ""}`
+    conversionOf(contribution.unit)?.kind ??
+    `unit:${countedUnitOf(contribution.unit)}`
   );
 }
 
@@ -170,6 +178,11 @@ export function summarizeIngredients(
     if (scaled !== null) {
       accumulator.total +=
         scaled * (conversionOf(contribution.unit)?.factor ?? 1);
+    }
+
+    // Once any part says "Stück", the line shows "Stück" (instead of no unit).
+    if (contribution.unit === PIECE) {
+      accumulator.countedUnit = PIECE;
     }
 
     accumulator.parts.push({

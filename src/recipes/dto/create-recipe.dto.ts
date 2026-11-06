@@ -6,12 +6,16 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  MaxLength,
   Min,
   ValidateNested,
 } from "class-validator";
 import { Transform, Type } from "class-transformer";
 
 import { UNITS } from "../units";
+
+const MAX_NOTE_LENGTH = 200;
+const MAX_SOURCE_LENGTH = 500;
 
 class IngredientUsageDto {
   @IsString()
@@ -35,6 +39,11 @@ class IngredientUsageDto {
   @IsOptional()
   @IsIn(UNITS)
   unit?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(MAX_NOTE_LENGTH)
+  note?: string;
 }
 
 class RecipeStepDto {
@@ -103,4 +112,9 @@ export class CreateRecipeDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(MAX_SOURCE_LENGTH)
+  source?: string;
 }

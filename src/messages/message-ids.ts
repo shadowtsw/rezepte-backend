@@ -23,6 +23,8 @@ export const MESSAGE_ID = {
   isUuid: "IS_UUID",
   min: "MIN",
   minLength: "MIN_LENGTH",
+  maxLength: "MAX_LENGTH",
+  isIn: "IS_IN",
   nestedValidation: "NESTED_VALIDATION",
 
   // Recipes
