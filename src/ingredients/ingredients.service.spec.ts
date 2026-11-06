@@ -39,52 +39,24 @@ describe("IngredientsService", () => {
     );
   });
 
-  describe("resolveIngredient", () => {
-    it("finds the ingredient by id", async () => {
+  describe("getIngredientById", () => {
+    it("finds the ingredient", async () => {
       repository.findById.mockResolvedValue(onion);
 
-      await expect(
-        service.resolveIngredient({
-          ingredientId: onion.id,
-          ingredient: "egal",
-        }),
-      ).resolves.toEqual(onion);
+      await expect(service.getIngredientById(onion.id)).resolves.toEqual(onion);
     });
 
     it("throws INGREDIENT_NOT_FOUND for an unknown id", async () => {
       repository.findById.mockResolvedValue(undefined);
 
       const failure = await service
-        .resolveIngredient({ ingredientId: onion.id, ingredient: "Zwiebel" })
+        .getIngredientById(onion.id)
         .catch((error: unknown) => error);
 
       expect(failure).toBeInstanceOf(NotFoundException);
       expect((failure as HttpException).getResponse()).toMatchObject({
         message: "INGREDIENT_NOT_FOUND",
       });
-    });
-
-    it("matches by name when no id is sent (older clients)", async () => {
-      repository.findByNormalizedName.mockResolvedValue(onion);
-
-      await expect(
-        service.resolveIngredient({ ingredient: "  zwiebel " }),
-      ).resolves.toEqual(onion);
-      expect(repository.findByNormalizedName.mock.calls).toEqual([["zwiebel"]]);
-    });
-
-    it("creates a missing ingredient when matched by name", async () => {
-      repository.findByNormalizedName.mockResolvedValue(undefined);
-
-      const created = await service.resolveIngredient({
-        ingredient: "Pastinake",
-      });
-
-      expect(created).toMatchObject({
-        name: "Pastinake",
-        normalizedName: "pastinake",
-      });
-      expect(repository.createIngredient.mock.calls).toHaveLength(1);
     });
   });
 

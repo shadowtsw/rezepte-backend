@@ -14,6 +14,8 @@ function validateUpdate(
   }) as Promise<UpdateRecipeDto>;
 }
 
+const FLOUR_ID = "44444444-4444-4444-8444-444444444444";
+
 const validSections = [
   {
     id: "section-1",
@@ -24,7 +26,13 @@ const validSections = [
         title: "Mischen",
         instruction: "Alles verrühren",
         ingredients: [
-          { id: "usage-1", ingredient: "Mehl", amount: 200, unit: "g" },
+          {
+            id: "usage-1",
+            ingredientId: FLOUR_ID,
+            ingredient: "Mehl",
+            amount: 200,
+            unit: "g",
+          },
         ],
       },
     ],
@@ -95,6 +103,38 @@ describe("UpdateRecipeDto validation", () => {
     await expect(
       validateUpdate({ sections: sectionsWithNegativeAmount }),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+});
+
+describe("UpdateRecipeDto ingredient usages", () => {
+  function usageWith(changes: Record<string, unknown>) {
+    const step = validSections[0].steps[0];
+    const usage = { ...step.ingredients[0], ...changes };
+
+    return [
+      { ...validSections[0], steps: [{ ...step, ingredients: [usage] }] },
+    ];
+  }
+
+  it("requires the ingredient id", async () => {
+    await expect(
+      validateUpdate({ sections: usageWith({ ingredientId: undefined }) }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it("accepts only units from the fixed list", async () => {
+    await expect(
+      validateUpdate({ sections: usageWith({ unit: "Tasse" }) }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      validateUpdate({ sections: usageWith({ unit: "Zehe" }) }),
+    ).resolves.toBeDefined();
+  });
+
+  it("treats an empty unit as no unit", async () => {
+    const result = await validateUpdate({ sections: usageWith({ unit: "" }) });
+
+    expect(result.sections?.[0].steps[0].ingredients[0].unit).toBeUndefined();
   });
 });
 

@@ -26,8 +26,8 @@ export interface RecipeStep {
 
 export interface IngredientUsage {
   id: string;
-  /** Registry entry this usage refers to. Optional until all clients send it (D1b, step 1). */
-  ingredientId?: string;
+  /** Registry entry this usage refers to. */
+  ingredientId: string;
   /** Display copy of the registry name; kept in sync when the ingredient is renamed. */
   ingredient: string;
   amount?: number;

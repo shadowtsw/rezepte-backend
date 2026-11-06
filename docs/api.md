@@ -43,9 +43,9 @@ Unknown properties in request bodies are stripped. `id`, `status` and `version` 
 
 ### Ingredient usages
 
-`{ id, ingredientId?, ingredient, amount?, unit? }`. `ingredientId` refers to the ingredient registry;
+`{ id, ingredientId, ingredient, amount?, unit? }`. `ingredientId` (required) refers to the ingredient registry;
 `ingredient` is a display copy of its name, set by the server on save and updated when the ingredient is renamed.
-Clients without `ingredientId` are matched by name (temporary, until all clients send it).
+`unit` must be one of `recipes/units.ts` or empty (no unit). Unknown ingredient ids give `INGREDIENT_NOT_FOUND`.
 
 ### `GET /recipes/:id/ingredients`
 

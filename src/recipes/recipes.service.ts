@@ -211,14 +211,16 @@ export class RecipesService {
     return linkedSteps;
   }
 
-  // One after another, so two usages of a new ingredient do not both try to create it.
+  // One after another: a few lookups per recipe, no need to run them in parallel.
   private async linkUsages(
     usages: IngredientUsage[],
   ): Promise<IngredientUsage[]> {
     const linkedUsages: IngredientUsage[] = [];
 
     for (const usage of usages) {
-      const ingredient = await this.ingredientsService.resolveIngredient(usage);
+      const ingredient = await this.ingredientsService.getIngredientById(
+        usage.ingredientId,
+      );
 
       if (isUnit(usage.unit)) {
         await this.ingredientsService.rememberLastUnit(

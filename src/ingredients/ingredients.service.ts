@@ -28,21 +28,6 @@ export class IngredientsService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  /**
-   * The registry entry for an ingredient usage: by `ingredientId`, or by name for clients that
-   * do not send the id yet (D1b, step 1). Throws INGREDIENT_NOT_FOUND for an unknown id.
-   */
-  async resolveIngredient(usage: {
-    ingredientId?: string;
-    ingredient: string;
-  }): Promise<Ingredient> {
-    if (usage.ingredientId) {
-      return this.getIngredientById(usage.ingredientId);
-    }
-
-    return this.findOrCreateIngredient(usage.ingredient);
-  }
-
   /** Remembers the unit last used with an ingredient, so the editor can preselect it. */
   async rememberLastUnit(id: string, unit: string): Promise<void> {
     await this.ingredientRepository.setLastUnit(id, unit);
@@ -80,38 +65,6 @@ export class IngredientsService {
     }
 
     return newIngredient;
-  }
-
-  async findOrCreateIngredient(name: string): Promise<Ingredient> {
-    const normalizedName = normalizeIngredientName(name);
-
-    const existingIngredient =
-      await this.ingredientRepository.findByNormalizedName(normalizedName);
-
-    if (existingIngredient) {
-      return existingIngredient;
-    }
-
-    const newIngredient: Ingredient = {
-      id: randomUUID(),
-      name: name.trim(),
-      normalizedName,
-    };
-
-    try {
-      return await this.ingredientRepository.createIngredient(newIngredient);
-    } catch (error) {
-      if (error instanceof DuplicateKeyError) {
-        const existingIngredient =
-          await this.ingredientRepository.findByNormalizedName(normalizedName);
-
-        if (existingIngredient) {
-          return existingIngredient;
-        }
-      }
-
-      throw error;
-    }
   }
 
   async updateIngredient(

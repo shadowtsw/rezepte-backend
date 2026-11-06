@@ -15,6 +15,7 @@ import {
 import type { CreateRecipeDto } from "./dto/create-recipe.dto";
 
 const LENTILS_ID = "11111111-1111-4111-8111-111111111111";
+const SALT_ID = "33333333-3333-4333-8333-333333333333";
 
 const registry: Record<string, Ingredient> = {
   [LENTILS_ID]: {
@@ -22,10 +23,11 @@ const registry: Record<string, Ingredient> = {
     name: "rote Linsen",
     normalizedName: "rote linsen",
   },
+  [SALT_ID]: { id: SALT_ID, name: "Salz", normalizedName: "salz" },
 };
 
 function recipeWithUsages(
-  usages: { ingredientId?: string; ingredient: string; unit?: string }[],
+  usages: { ingredientId: string; ingredient: string; unit?: string }[],
 ): CreateRecipeDto {
   return {
     title: "Dal",
@@ -60,7 +62,7 @@ describe("RecipesService", () => {
     renameIngredientInRecipes: jest.Mock;
   };
   let ingredientsService: {
-    resolveIngredient: jest.Mock;
+    getIngredientById: jest.Mock;
     rememberLastUnit: jest.Mock;
   };
   let eventEmitter: { emitAsync: jest.Mock };
@@ -72,17 +74,7 @@ describe("RecipesService", () => {
       renameIngredientInRecipes: jest.fn(),
     };
     ingredientsService = {
-      resolveIngredient: jest.fn(
-        (usage: { ingredientId?: string; ingredient: string }) =>
-          Promise.resolve(
-            usage.ingredientId
-              ? registry[usage.ingredientId]
-              : {
-                  id: "22222222-2222-4222-8222-222222222222",
-                  name: usage.ingredient.trim(),
-                },
-          ),
-      ),
+      getIngredientById: jest.fn((id: string) => Promise.resolve(registry[id])),
       rememberLastUnit: jest.fn(),
     };
     eventEmitter = { emitAsync: jest.fn().mockResolvedValue([]) };
@@ -113,23 +105,11 @@ describe("RecipesService", () => {
       });
     });
 
-    it("adds the id for usages matched by name (older clients)", async () => {
-      const created = await service.createRecipe(
-        recipeWithUsages([{ ingredient: " Pastinake " }]),
-      );
-
-      expect(created.sections[0]?.steps[0]?.ingredients[0]).toMatchObject({
-        ingredientId: "22222222-2222-4222-8222-222222222222",
-        ingredient: "Pastinake",
-      });
-    });
-
-    it("remembers known units only", async () => {
+    it("remembers the unit, but not for usages without unit", async () => {
       await service.createRecipe(
         recipeWithUsages([
           { ingredientId: LENTILS_ID, ingredient: "rote Linsen", unit: "g" },
-          { ingredient: "Salz", unit: "Tasse" },
-          { ingredient: "Pfeffer" },
+          { ingredientId: SALT_ID, ingredient: "Salz" },
         ]),
       );
 

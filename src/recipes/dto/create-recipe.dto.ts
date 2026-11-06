@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsIn,
   IsInt,
   IsNumber,
   IsOptional,
@@ -8,16 +9,16 @@ import {
   Min,
   ValidateNested,
 } from "class-validator";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
+
+import { UNITS } from "../units";
 
 class IngredientUsageDto {
   @IsString()
   id!: string;
 
-  // Optional for now: clients without it are matched by name (D1b, step 1).
-  @IsOptional()
   @IsUUID()
-  ingredientId?: string;
+  ingredientId!: string;
 
   @IsString()
   ingredient!: string;
@@ -27,8 +28,12 @@ class IngredientUsageDto {
   @Min(0)
   amount?: number;
 
+  // An empty unit means "no unit" (e.g. "2 Eier").
+  @Transform(({ value }: { value: unknown }) =>
+    value === "" ? undefined : value,
+  )
   @IsOptional()
-  @IsString()
+  @IsIn(UNITS)
   unit?: string;
 }
 
