@@ -357,6 +357,7 @@ function contributionsOf(
         name: usage.ingredient,
         amount: usage.amount ?? undefined,
         unit: usage.unit || undefined,
+        note: usage.note || undefined,
         factor,
         origin: { recipeId: recipe.id, servings },
       })),

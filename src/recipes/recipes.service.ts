@@ -168,6 +168,7 @@ export class RecipesService {
             name: usage.ingredient,
             amount: usage.amount ?? undefined,
             unit: usage.unit || undefined,
+            note: usage.note || undefined,
             factor: 1,
             origin: { stepId: step.id },
           })),

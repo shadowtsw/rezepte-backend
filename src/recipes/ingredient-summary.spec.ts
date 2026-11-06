@@ -46,8 +46,8 @@ describe("summarizeIngredients", () => {
       approximate: false,
     });
     expect(lentils?.parts).toEqual([
-      { amount: 250, unit: "g", origin: { stepId: "unassigned" } },
-      { amount: 500, unit: "g", origin: { stepId: "step-1" } },
+      { amount: 250, unit: "g", note: null, origin: { stepId: "unassigned" } },
+      { amount: 500, unit: "g", note: null, origin: { stepId: "step-1" } },
     ]);
   });
 
@@ -232,5 +232,27 @@ describe("summarizeIngredients", () => {
 
     expect(eggs).toMatchObject({ amount: 5, unit: "Stück" });
     expect(onlyWithoutUnit).toMatchObject({ amount: 2, unit: null });
+  });
+
+  it("keeps the note per part without splitting the line", () => {
+    const cheese = line(
+      [
+        part({
+          ingredientId: "gouda",
+          name: "Gouda",
+          amount: 100,
+          unit: "g",
+          note: "gerieben",
+        }),
+        part({ ingredientId: "gouda", name: "Gouda", amount: 50, unit: "g" }),
+      ],
+      "Gouda",
+    );
+
+    expect(cheese).toMatchObject({ amount: 150, unit: "g" });
+    expect(cheese?.parts.map((entry) => entry.note)).toEqual([
+      "gerieben",
+      null,
+    ]);
   });
 });

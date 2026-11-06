@@ -19,6 +19,8 @@ export interface IngredientContribution {
   name: string;
   amount?: number;
   unit?: string;
+  /** Preparation hint; kept per part, never splits a line. */
+  note?: string;
   /** Scaling, e.g. 2 when a recipe for 2 is used for 4 servings. */
   factor: number;
   origin: SummaryOrigin;
@@ -28,6 +30,7 @@ export interface SummaryPart {
   /** Scaled amount, null = "nach Bedarf". */
   amount: number | null;
   unit: string | null;
+  note: string | null;
   origin: SummaryOrigin;
 }
 
@@ -188,6 +191,7 @@ export function summarizeIngredients(
     accumulator.parts.push({
       amount: scaled === null ? null : roundPart(scaled),
       unit: contribution.unit ?? null,
+      note: contribution.note ?? null,
       origin: contribution.origin,
     });
     accumulators.set(key, accumulator);
