@@ -15,6 +15,11 @@ import {
   RecipeStep,
 } from "./recipe.model";
 import { isUnit } from "./units";
+import {
+  type IngredientContribution,
+  type IngredientSummaryLine,
+  summarizeIngredients,
+} from "./ingredient-summary";
 import { randomUUID } from "node:crypto";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
 import { DuplicateKeyError } from "src/common/errors/duplicate-key.error";
@@ -145,6 +150,26 @@ export class RecipesService {
     }
 
     return updated;
+  }
+
+  /** All ingredients of a recipe, summed (same ingredient and kind of unit), with the steps they come from. */
+  async getIngredientSummary(id: string): Promise<IngredientSummaryLine[]> {
+    const recipe = await this.getRecipeById(id);
+    const contributions: IngredientContribution[] = recipe.sections.flatMap(
+      (section) =>
+        section.steps.flatMap((step) =>
+          step.ingredients.map((usage) => ({
+            ingredientId: usage.ingredientId,
+            name: usage.ingredient,
+            amount: usage.amount ?? undefined,
+            unit: usage.unit || undefined,
+            factor: 1,
+            origin: { stepId: step.id },
+          })),
+        ),
+    );
+
+    return summarizeIngredients(contributions);
   }
 
   @OnEvent(INGREDIENT_RENAMED_EVENT, { suppressErrors: false })

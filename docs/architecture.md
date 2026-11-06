@@ -16,7 +16,7 @@ Services only know the interface in `repositories/<name>.repository.ts`.
 | `DatabaseModule` | `src/database` | – | provides the connected `MongoClient` as `MONGO_CLIENT` (reads `MONGO_URI`) |
 | `RecipesModule` | `src/recipes` | `recipes` | recipes with sections → steps → ingredient usages |
 | `CategoriesModule` | `src/categories` | `categories` | uses `RecipesService` to remove category references on delete |
-| `IngredientsModule` | `src/ingredients` | `ingredients` | ingredient registry; filled automatically via `findOrCreateIngredient` when recipes are created/updated |
+| `IngredientsModule` | `src/ingredients` | `ingredients` | ingredient registry with `lastUnit`; recipes link usages via `resolveIngredient` on save |
 | `MessagesModule` | `src/messages` | – | message IDs, text catalog per language, `GET /messages` |
 | `CollectionsModule` | `src/collections` | `recipe_collections` | ordered items (recipe or group); uses `RecipesService` to check status |
 
@@ -29,7 +29,7 @@ See `src/**/*.model.ts` for the full types.
 - **Recipe**: `id`, `title`, `servings`, `tags`, `categories: { id }[]`, `sections`, `notes?`, `status`, `version`
   - **Section**: `id`, `title`, `steps`
   - **Step**: `id`, `title`, `instruction`, `duration?`, `ingredients`
-  - **IngredientUsage**: `id`, `ingredient` (name), `amount?`, `unit?`. The `id` identifies this usage in the step
+  - **IngredientUsage**: `id`, `ingredientId`, `ingredient` (name copy), `amount?`, `unit?` (fixed list in `recipes/units.ts`). The `id` identifies this usage in the step
     (same ingredient can appear several times); it is not the ID from the `ingredients` registry.
 - **Category**: `id`, `name`
 - **Collection**: `id`, `name`, `version`, `items`
@@ -42,6 +42,7 @@ Modules that must react to changes elsewhere listen to events (`@nestjs/event-em
 | Event | Emitted by | Listeners |
 | --- | --- | --- |
 | `recipe.deleted` (`RecipeDeletedEvent`) | `RecipesService.deleteRecipe` | `CollectionsService.handleRecipeDeleted` removes references |
+| `ingredient.renamed` (`IngredientRenamedEvent`) | `IngredientsService.updateIngredient` | `RecipesService.handleIngredientRenamed` updates name copies |
 
 Emit with `emitAsync` and listen with `suppressErrors: false`, so the request waits for listeners and sees their errors.
 

@@ -15,6 +15,7 @@ import { RecipesService } from "./recipes.service";
 import { CreateRecipeDto } from "./dto/create-recipe.dto";
 import type { Recipe, RecipeStatus } from "./recipe.model";
 import { UpdateRecipeDto } from "./dto/update-recipe.dto";
+import type { IngredientSummaryLine } from "./ingredient-summary";
 import { ResponseMessage } from "src/common/api/response-message.decorator";
 import { MESSAGE_ID } from "src/messages/message-ids";
 
@@ -38,6 +39,13 @@ export class RecipesController {
   @Get(":id")
   getRecipeById(@Param("id") id: string): Promise<Recipe> {
     return this.recipesService.getRecipeById(id);
+  }
+
+  @Get(":id/ingredients")
+  getIngredientSummary(
+    @Param("id") id: string,
+  ): Promise<IngredientSummaryLine[]> {
+    return this.recipesService.getIngredientSummary(id);
   }
 
   @Post()

@@ -32,6 +32,7 @@ Unknown properties in request bodies are stripped. `id`, `status` and `version` 
 | --- | --- | --- |
 | GET | `/recipes` | query: `categoryId`, `uncategorized=true`, `status` |
 | GET | `/recipes/:id` | 404 if missing |
+| GET | `/recipes/:id/ingredients` | summed ingredients (see below) |
 | POST | `/recipes` | creates as `draft`, `version: 1` |
 | PATCH | `/recipes/:id` | partial update, never changes `status` |
 | PUT | `/recipes/:id` | identical to PATCH by design (partial update) |
@@ -39,6 +40,23 @@ Unknown properties in request bodies are stripped. `id`, `status` and `version` 
 | POST | `/recipes/:id/publish` | status → `published` |
 | POST | `/recipes/:id/archive` | status → `archived` |
 | POST | `/recipes/:id/draft` | status → `draft` |
+
+### Ingredient usages
+
+`{ id, ingredientId?, ingredient, amount?, unit? }`. `ingredientId` refers to the ingredient registry;
+`ingredient` is a display copy of its name, set by the server on save and updated when the ingredient is renamed.
+Clients without `ingredientId` are matched by name (temporary, until all clients send it).
+
+### `GET /recipes/:id/ingredients`
+
+```json
+[{ "key": "…|mass", "ingredientId": "…", "name": "rote Linsen", "amount": 1.25, "unit": "kg", "approximate": false,
+   "parts": [{ "amount": 250, "unit": "g", "origin": { "stepId": "__unassigned__" } },
+             { "amount": 1, "unit": "kg", "origin": { "stepId": "step-1" } }] }]
+```
+
+Same ingredient and kind of unit are summed, converting g/kg, ml/l, TL/EL (`src/recipes/ingredient-summary.ts`).
+`amount: null` means "nach Bedarf". Collections will use the same function.
 
 ## Categories
 
