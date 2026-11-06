@@ -77,7 +77,7 @@ Unknown properties in request bodies are stripped. `id`, `status` and `version` 
 {
   "version": 3,
   "items": [
-    { "id": "…", "type": "recipe", "recipeId": "…" },
+    { "id": "…", "type": "recipe", "recipeId": "…", "servings": 4 },
     {
       "id": "…",
       "type": "group",
@@ -91,4 +91,5 @@ Unknown properties in request bodies are stripped. `id`, `status` and `version` 
 - `id` may be omitted for new items; the server generates it.
 - `409` when `version` is outdated, item IDs repeat, an existing item changes type or `recipeId`, or a new recipe is not published.
 - Duplicate `recipeId`s are allowed.
+- `servings` (integer ≥ 1) is optional per entry; when missing, the recipe's own servings apply. It is not stored then.
 - On success `version` increments and the updated collection is returned.

@@ -246,6 +246,7 @@ export class CollectionsService {
           id: item.id ?? randomUUID(),
           type: "recipe",
           recipeId: item.recipeId,
+          ...servingsField(item.servings),
         };
       }
 
@@ -256,10 +257,19 @@ export class CollectionsService {
         recipes: item.recipes.map((recipe) => ({
           id: recipe.id ?? randomUUID(),
           recipeId: recipe.recipeId,
+          ...servingsField(recipe.servings),
         })),
       };
     });
   }
+}
+
+/**
+ * Leaves the field out when no servings are set: the MongoDB driver would store
+ * `undefined` as `null`, and a missing field means "use the recipe's servings".
+ */
+function servingsField(servings: number | undefined): { servings?: number } {
+  return servings === undefined ? {} : { servings };
 }
 
 function collectionNotFound(id: string): NotFoundException {

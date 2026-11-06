@@ -11,6 +11,8 @@ export interface CollectionRecipeItem {
   id: string;
   type: "recipe";
   recipeId: string;
+  /** Servings for this entry; missing means the recipe's own servings. */
+  servings?: number;
 }
 
 export interface CollectionGroupItem {
@@ -23,4 +25,6 @@ export interface CollectionGroupItem {
 export interface CollectionRecipeReference {
   id: string;
   recipeId: string;
+  /** Servings for this entry; missing means the recipe's own servings. */
+  servings?: number;
 }

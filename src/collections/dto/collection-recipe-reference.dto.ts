@@ -1,4 +1,4 @@
-import { IsOptional, IsUUID } from "class-validator";
+import { IsInt, IsOptional, IsUUID, Min } from "class-validator";
 
 export class CollectionRecipeReferenceDto {
   @IsOptional()
@@ -7,4 +7,9 @@ export class CollectionRecipeReferenceDto {
 
   @IsUUID()
   recipeId!: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  servings?: number;
 }

@@ -231,6 +231,35 @@ describe("CollectionsService", () => {
       ).toEqual(expect.any(String));
     });
 
+    it("keeps servings per entry and leaves them out when not set", async () => {
+      const updated = await updateItems([
+        {
+          id: "item-single",
+          type: "recipe",
+          recipeId: PUBLISHED_RECIPE_ID,
+          servings: 4,
+        },
+        {
+          id: "item-group",
+          type: "group",
+          name: "Saturday menu",
+          recipes: [
+            { id: "item-in-group", recipeId: PUBLISHED_RECIPE_ID, servings: 6 },
+            { recipeId: PUBLISHED_RECIPE_ID },
+          ],
+        },
+      ]);
+
+      const [single, group] = updated.items;
+      expect(single).toMatchObject({ servings: 4 });
+      expect(group.type === "group" && group.recipes[0]).toMatchObject({
+        servings: 6,
+      });
+      expect(group.type === "group" && group.recipes[1]).not.toHaveProperty(
+        "servings",
+      );
+    });
+
     it("allows the same recipe several times", async () => {
       const updated = await updateItems([
         { id: "item-single", type: "recipe", recipeId: PUBLISHED_RECIPE_ID },
